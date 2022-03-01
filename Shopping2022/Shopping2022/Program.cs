@@ -1,9 +1,17 @@
-var builder = WebApplication.CreateBuilder(args);
+using Microsoft.EntityFrameworkCore;
+using Shopping2022.Data;
+
+WebApplicationBuilder? builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-var app = builder.Build();
+builder.Services.AddDbContext<DataContext>(o =>
+{
+    o.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
+
+WebApplication? app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
