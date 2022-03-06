@@ -1,0 +1,19 @@
+﻿@model Shopping2022.Data.Entities.Category
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<h1>Borrar País</h1>
+
+<h3>¿Esta seguro que querer Borrar el País?</h3>
+<div>
+    <partial name="_CategoryDetails" />
+
+
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="Id" />
+        <input type="submit" value="Borrar" class="btn btn-danger" /> |
+        <a asp-action="Index" class="btn btn-outline-dark">Regresar</a>
+    </form>
+</div>

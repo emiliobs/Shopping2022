@@ -157,10 +157,18 @@ namespace Shopping2022.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            Country country = await _context.Countries.FindAsync(id);
-            _context.Countries.Remove(country);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                Country country = await _context.Countries.FindAsync(id);
+                _context.Countries.Remove(country);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         //private bool CountryExists(int id)
