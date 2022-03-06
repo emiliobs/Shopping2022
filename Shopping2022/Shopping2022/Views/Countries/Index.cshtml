@@ -36,7 +36,9 @@
 </table>
 
 @section Scripts{
-<partial name="_ValidationScriptsPartial"></partial>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+@*<partial name="_ValidationScriptsPartial"></partial>*@
 <script type="text/javascript">
     $(document).ready(function()
     {

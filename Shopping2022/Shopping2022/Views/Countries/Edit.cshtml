@@ -13,14 +13,13 @@
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
+
+            <partial name="_Country" />
+
+
             <div class="form-group m-2">
-                <input type="submit" class="btn btn-outline-warning" value="Editar"/>
-                 <a asp-action="Index" class="btn btn-outline-dark">Regresar</a>
+                <input type="submit" class="btn btn-outline-warning" value="Editar" />
+                <a asp-action="Index" class="btn btn-outline-dark">Regresar</a>
             </div>
         </form>
     </div>
@@ -29,5 +28,7 @@
 
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+}
 }
