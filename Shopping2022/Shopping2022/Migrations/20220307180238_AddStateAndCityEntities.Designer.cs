@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Shopping2022.Data;
 
@@ -10,9 +11,10 @@ using Shopping2022.Data;
 namespace Shopping2022.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220307180238_AddStateAndCityEntities")]
+    partial class AddStateAndCityEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -62,7 +64,7 @@ namespace Shopping2022.Migrations
 
                     b.HasIndex("StateId");
 
-                    b.HasIndex("Name", "StateId")
+                    b.HasIndex("Name", "Id")
                         .IsUnique();
 
                     b.ToTable("Cities");
@@ -109,7 +111,7 @@ namespace Shopping2022.Migrations
 
                     b.HasIndex("CountryId");
 
-                    b.HasIndex("Name", "CountryId")
+                    b.HasIndex("Name", "Id")
                         .IsUnique();
 
                     b.ToTable("States");
