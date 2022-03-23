@@ -1,25 +1,26 @@
-﻿@model Shopping2022.Data.Entities.Country
+﻿ @model Shopping2022.Models.CityViewModel
 
 @{
     ViewData["Title"] = "Edit";
 }
 
-<h1>Editar País</h1>
+<h1>Editar Ciudad</h1>
 
 
 <hr />
 <div class="row">
     <div class="col-md-12">
-        <form asp-action="Edit">
+        <form asp-action="EditCity">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
-            <input  type="hidden" asp-for="States"/>
-            <partial name="_Country" />
+            <input type="hidden" asp-for="StateId" />
+
+            <partial name="_City" />
 
 
             <div class="form-group m-2">
                 <input type="submit" class="btn btn-outline-warning" value="Guardar" />
-                <a asp-action="Index" class="btn btn-outline-dark">Regresar</a>
+                <a asp-action="DetailsState" asp-route-id="@Model.StateId" class="btn btn-outline-dark">Regresar</a>
             </div>
         </form>
     </div>

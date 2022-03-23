@@ -16,7 +16,7 @@ namespace Shopping2022.Data.Entities
 
         public ICollection<City> Cities { get; set; }
 
-        [Display(Name = "Cities")]
+        [Display(Name = "Ciudades")]
         public int CitiesNumber => Cities == null ? 0 : Cities.Count;
     }
 }

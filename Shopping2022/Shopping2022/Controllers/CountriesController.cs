@@ -16,44 +16,23 @@ namespace Shopping2022.Controllers
             _context = context;
         }
 
-        // GET: Countries
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
             return View(await _context.Countries.Include(c => c.States).ToListAsync());
         }
 
-        // GET: Countries/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            Country country = await _context.Countries.Include(c => c.States)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (country == null)
-            {
-                return NotFound();
-            }
-
-            return View(country);
-        }
-
-        // GET: Countries/Create
         public IActionResult Create()
         {
-            var country = new Country 
+            Country country = new Country
             {
-              States = new List<State>(),
+                States = new List<State>(),
             };
 
             return View(country);
         }
 
-        // POST: Countries/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Country country)
@@ -85,7 +64,139 @@ namespace Shopping2022.Controllers
             return View(country);
         }
 
-        // GET: Countries/Create
+        [HttpGet]
+
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            Country country = await _context.Countries
+                .Include(c => c.States)
+                .ThenInclude(s => s.Cities)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (country == null)
+            {
+                return NotFound();
+            }
+
+            return View(country);
+        }
+
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            Country country = await _context.Countries.Include(c => c.States).FirstOrDefaultAsync(c => c.Id == id);
+            if (country == null)
+            {
+                return NotFound();
+            }
+            return View(country);
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Country country)
+        {
+            if (id != country.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(country);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (DbUpdateException dbUpdateException)
+                {
+                    if (dbUpdateException.InnerException.Message.Contains("duplicate"))
+                    {
+                        ModelState.AddModelError(string.Empty, "Ya existe un País con el mismo nombre.");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError(string.Empty, ex.Message);
+                }
+            }
+            return View(country);
+        }
+
+
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            Country country = await _context.Countries.Include(c => c.States)
+                .FirstOrDefaultAsync(c => c.Id == id);
+            if (country == null)
+            {
+                return NotFound();
+            }
+
+            return View(country);
+        }
+
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            try
+            {
+                Country country = await _context.Countries.FindAsync(id);
+                _context.Countries.Remove(country);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+
+        [HttpGet]
+
+        public async Task<IActionResult> DetailsState(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            State state = await _context.States
+                .Include(s => s.Country)
+                .Include(s => s.Cities)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (state == null)
+            {
+                return NotFound();
+            }
+
+            return View(state);
+        }
+
+
         [HttpGet]
         public async Task<IActionResult> AddState(int? id)
         {
@@ -108,9 +219,7 @@ namespace Shopping2022.Controllers
             return View(stateVIewModel);
         }
 
-        // POST: Countries/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddState(StateViewModel stateViewModel)
@@ -150,7 +259,8 @@ namespace Shopping2022.Controllers
             return View(stateViewModel);
         }
 
-        // GET: Countries/Edit/5
+        [HttpGet]
+
         public async Task<IActionResult> EditState(int? id)
         {
             if (id == null)
@@ -158,25 +268,22 @@ namespace Shopping2022.Controllers
                 return NotFound();
             }
 
-            var state = await _context.States.Include(s => s.Country).FirstOrDefaultAsync(s => s.Id == id);
+            State state = await _context.States.Include(s => s.Country).FirstOrDefaultAsync(s => s.Id == id);
             if (state == null)
             {
                 return NotFound();
             }
 
-            StateViewModel stateViewModel = new StateViewModel 
+            StateViewModel stateViewModel = new StateViewModel
             {
-              CountryId = state.Country.Id,
-              Id = state.Id,
-              Name = state.Name,
+                CountryId = state.Country.Id,
+                Id = state.Id,
+                Name = state.Name,
             };
 
             return View(stateViewModel);
         }
 
-        // POST: Countries/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditState(int id, StateViewModel stateViewModely)
@@ -190,15 +297,15 @@ namespace Shopping2022.Controllers
             {
                 try
                 {
-                    var state = new State 
+                    State state = new State
                     {
                         Id = stateViewModely.Id,
                         Name = stateViewModely.Name,
                     };
-                    
+
                     _context.Update(state);
                     await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Details), new { id =  stateViewModely.CountryId});
+                    return RedirectToAction(nameof(Details), new { id = stateViewModely.CountryId });
                 }
                 catch (DbUpdateException dbUpdateException)
                 {
@@ -219,46 +326,53 @@ namespace Shopping2022.Controllers
             return View(stateViewModely);
         }
 
-        public async Task<IActionResult> Edit(int? id)
+        [HttpGet]
+        public async Task<IActionResult> AddCity(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            Country country = await _context.Countries.FindAsync(id);
-            if (country == null)
+            State state = await _context.States.FindAsync(id);
+            if (state == null)
             {
                 return NotFound();
             }
-            return View(country);
+
+            CityViewModel CityVIewModel = new CityViewModel
+            {
+                StateId = state.Id,
+            };
+
+            return View(CityVIewModel);
         }
 
-        // POST: Countries/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Country country)
+        public async Task<IActionResult> AddCity(CityViewModel cityViewModel)
         {
-            if (id != country.Id)
-            {
-                return NotFound();
-            }
-
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(country);
+                    City City = new City()
+                    {
+                        State = await _context.States.FindAsync(cityViewModel.StateId),
+                        Name = cityViewModel.Name,
+                    };
+
+                    _context.Add(City);
                     await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Index));
+
+                    return RedirectToAction(nameof(DetailsState), new { id = cityViewModel.Id });
                 }
                 catch (DbUpdateException dbUpdateException)
                 {
                     if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                     {
-                        ModelState.AddModelError(string.Empty, "Ya existe un País con el mismo nombre.");
+                        ModelState.AddModelError(string.Empty, "Ya existe una Ciudad con el mismo nombre en este Departamento/Estado.");
                     }
                     else
                     {
@@ -270,38 +384,133 @@ namespace Shopping2022.Controllers
                     ModelState.AddModelError(string.Empty, ex.Message);
                 }
             }
-            return View(country);
+            return View(cityViewModel);
         }
 
-        // GET: Countries/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        [HttpGet]
+
+        public async Task<IActionResult> EditCity(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            Country country = await _context.Countries.Include(c => c.States)
+            City city = await _context.Cities
+                .Include(c => c.State)
                 .FirstOrDefaultAsync(c => c.Id == id);
-            if (country == null)
+            if (city == null)
             {
                 return NotFound();
             }
 
-            return View(country);
+            CityViewModel cityViewModel = new()
+            {
+                StateId = city.State.Id,
+                Id = city.Id,
+                Name = city.Name,
+            };
+
+            return View(cityViewModel);
         }
 
-        // POST: Countries/Delete/5
-        [HttpPost, ActionName("Delete")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> EditCity(int id, CityViewModel cityViewModel)
+        {
+            if (id != cityViewModel.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    City city = new City
+                    {
+                        Id = cityViewModel.Id,
+                        Name = cityViewModel.Name,
+                    };
+
+                    _context.Update(city);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(DetailsState), new { id = cityViewModel.StateId });
+                }
+                catch (DbUpdateException dbUpdateException)
+                {
+                    if (dbUpdateException.InnerException.Message.Contains("duplicate"))
+                    {
+                        ModelState.AddModelError(string.Empty, "Ya existe una Ciudad con el mismo nombre en este Departamento/Estado..");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError(string.Empty, ex.Message);
+                }
+            }
+            return View(cityViewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DetailsCity(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            City city = await _context.Cities
+                .Include(c => c.State)
+                .FirstOrDefaultAsync(c => c.Id == id);
+            if (city == null)
+            {
+                return NotFound();
+            }
+
+            return View(city);
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> DeleteState(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            State state = await _context.States
+                .Include(s => s.Country)
+                .FirstOrDefaultAsync(s => s.Id == id);
+            if (state == null)
+            {
+                return NotFound();
+            }
+
+            return View(state);
+        }
+
+
+        [HttpPost, ActionName("DeleteState")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmedState(int id)
         {
             try
             {
-                Country country = await _context.Countries.FindAsync(id);
-                _context.Countries.Remove(country);
+                State state = await _context.States
+                    .Include(s => s.Country)
+                    .FirstOrDefaultAsync(s => s.Id == id);
+
+                _context.States.Remove(state);
+
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+
+                return RedirectToAction(nameof(Details), new { id = state.Country.Id });
             }
             catch (Exception)
             {
@@ -309,6 +518,50 @@ namespace Shopping2022.Controllers
                 throw;
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> DeleteCity(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            City city = await _context.Cities
+                .Include(c => c.State)
+                .FirstOrDefaultAsync(s => s.Id == id);
+            if (city == null)
+            {
+                return NotFound();
+            }
+
+            return View(city);
+        }
+
+
+        [HttpPost, ActionName("DeleteCity")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmedCity(int id)
+        {
+            try
+            {
+                City city = await _context.Cities
+                    .Include(c => c.State)
+                    .FirstOrDefaultAsync(c => c.Id == id);
+
+                _context.Cities.Remove(city);
+
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction(nameof(DetailsState), new { id = city.State.Id });
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
 
 
 

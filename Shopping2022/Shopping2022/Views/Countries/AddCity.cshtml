@@ -1,22 +1,22 @@
-﻿@model Shopping2022.Models.StateViewModel
+﻿@model Shopping2022.Models.CityViewModel
 
 @{
     ViewData["Title"] = "Create";
 }
 
-<h1>Crear Departamento/Estado</h1>
+<h1>Crear Ciudad</h1>
 <hr />
 <div class="row">
     <div class="col-md-12">
-        <form asp-action="AddState">
+        <form asp-action="AddCity">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-              <input  type="hidden" asp-for="CountryId"/>
+              <input  type="hidden" asp-for="StateId"/>
 
-                <partial name="_State" />
+                <partial name="_City" />
 
             <div class="form-group m-2">
                 <input type="submit" value="Crear" class="btn btn-outline-warning" />
-                 <a asp-action="Details" asp-route-id="@Model.CountryId" class="btn btn-outline-dark">Regresar</a>
+                 <a asp-action="DetailsState" asp-route-id="@Model.StateId" class="btn btn-outline-dark">Regresar</a>
             </div>
         </form>
     </div>
