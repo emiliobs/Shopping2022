@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Shopping2022.Data;
+using Shopping2022.Data.Entities;
+using Shopping2022.Helpers;
 
 WebApplicationBuilder? builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +14,20 @@ builder.Services.AddDbContext<DataContext>(o =>
     o.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
+//TODO: Make strongest password:
+builder.Services.AddIdentity<User, IdentityRole>(cfg =>
+{
+    cfg.User.RequireUniqueEmail = true;
+    cfg.Password.RequireDigit = false;
+    cfg.Password.RequiredUniqueChars  = 0;
+    cfg.Password.RequireUppercase = false;
+    cfg.Password.RequireNonAlphanumeric = false;
+    cfg.Password.RequireLowercase = false;
+    
+}).AddEntityFrameworkStores<DataContext>();
+
 builder.Services.AddTransient<SeedDb>();
+builder.Services.AddScoped<IUserHelper, UserHelper>();
 
 builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
 WebApplication? app = builder.Build();
@@ -41,7 +57,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

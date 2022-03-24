@@ -1,14 +1,18 @@
 ﻿using Shopping2022.Data.Entities;
+using Shopping2022.Enums;
+using Shopping2022.Helpers;
 
 namespace Shopping2022.Data
 {
     public class SeedDb
     {
         private readonly DataContext _context;
+        private readonly IUserHelper _userHelper;
 
-        public SeedDb(DataContext context)
+        public SeedDb(DataContext context, IUserHelper userHelper)
         {
             _context = context;
+            _userHelper = userHelper;
         }
 
         public async Task SeedAsync()
@@ -16,6 +20,41 @@ namespace Shopping2022.Data
             await _context.Database.EnsureCreatedAsync();
             await CheckCategoriesAsync();
             await CheckCountriesAsync();
+            await CheckRolesAsync();
+            await CheckUserAsync("5555", "Emilio", "Barrera", "emilio@yopmail.com", "07907951284", "CAlle LOndon 55", UserType.Admin);
+        }
+
+        private async Task<User> CheckUserAsync(string document, string firstName, string lastName, string email, string phone, string address, UserType userType)
+        {
+            var user = await _userHelper.GetUserAsync(email);
+            if (user == null)
+            {
+                user = new User
+                {
+                    FirstName = firstName,
+                    LastName = lastName,
+                    Email = email,
+                    UserName   = email,
+                    Document = document,
+                    Address = address,
+                    PhoneNumber = phone,
+                    City = _context.Cities.FirstOrDefault(),
+                    UserType =  userType,
+
+                };
+
+                await _userHelper.AddUserAsync(user, "Eabs123.");
+                await _userHelper.AddUserToRoleAsyn(user, userType.ToString());
+
+            }
+
+            return user;
+        } 
+
+        private async Task CheckRolesAsync()
+        {
+            await _userHelper.CheckRoleAsync(UserType.Admin.ToString());
+            await _userHelper.CheckRoleAsync(UserType.User.ToString());
         }
 
         private async Task CheckCategoriesAsync()
