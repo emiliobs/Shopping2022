@@ -9,6 +9,7 @@ namespace Shopping2022.Helpers
         Task<User> GetUserAsync(string email);
 
         Task<IdentityResult> AddUserAsync(User user, string password);
+        Task<User> AddUserAsync(AddUserViewModel addUserViewModel);
 
         Task CheckRoleAsync(string roleName);
 

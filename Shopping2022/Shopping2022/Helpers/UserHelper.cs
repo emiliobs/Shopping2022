@@ -25,6 +25,34 @@ namespace Shopping2022.Helpers
         {
             return await _userManager.CreateAsync(user, password);    
         }
+        public async Task<User> AddUserAsync(AddUserViewModel addUserViewModel)
+        {
+            var user = new User 
+            {
+               Address = addUserViewModel.Address,
+               Document = addUserViewModel.Document,
+               Email = addUserViewModel.Username,
+               FirstName = addUserViewModel.FirstName,
+               LastName = addUserViewModel.LastName,
+               ImageId = addUserViewModel.ImageId,
+               PhoneNumber = addUserViewModel.PhoneNumber,
+               City = await _context.Cities.FindAsync(addUserViewModel.Id),
+               UserName = addUserViewModel.Username,
+               UserType = addUserViewModel.UserType
+               
+            };
+
+            var result = await _userManager.CreateAsync(user, addUserViewModel.Password);
+            if (result != IdentityResult.Success)
+            {
+                return null;
+            }
+
+            var newUser = await GetUserAsync(addUserViewModel.Username);
+            await AddUserToRoleAsyn(newUser, addUserViewModel.UserType.ToString());
+
+            return newUser;
+        }
 
         public async Task AddUserToRoleAsyn(User user, string roleName)
         {
