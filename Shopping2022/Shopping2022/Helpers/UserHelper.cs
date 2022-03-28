@@ -23,32 +23,32 @@ namespace Shopping2022.Helpers
         }
         public async Task<IdentityResult> AddUserAsync(User user, string password)
         {
-            return await _userManager.CreateAsync(user, password);    
+            return await _userManager.CreateAsync(user, password);
         }
         public async Task<User> AddUserAsync(AddUserViewModel addUserViewModel)
         {
-            var user = new User 
+            User? user = new User
             {
-               Address = addUserViewModel.Address,
-               Document = addUserViewModel.Document,
-               Email = addUserViewModel.Username,
-               FirstName = addUserViewModel.FirstName,
-               LastName = addUserViewModel.LastName,
-               ImageId = addUserViewModel.ImageId,
-               PhoneNumber = addUserViewModel.PhoneNumber,
-               City = await _context.Cities.FindAsync(addUserViewModel.CityId),
-               UserName = addUserViewModel.Username,
-               UserType = addUserViewModel.UserType
-               
+                Address = addUserViewModel.Address,
+                Document = addUserViewModel.Document,
+                Email = addUserViewModel.Username,
+                FirstName = addUserViewModel.FirstName,
+                LastName = addUserViewModel.LastName,
+                ImageId = addUserViewModel.ImageId,
+                PhoneNumber = addUserViewModel.PhoneNumber,
+                City = await _context.Cities.FindAsync(addUserViewModel.CityId),
+                UserName = addUserViewModel.Username,
+                UserType = addUserViewModel.UserType
+
             };
 
-            var result = await _userManager.CreateAsync(user, addUserViewModel.Password);
+            IdentityResult? result = await _userManager.CreateAsync(user, addUserViewModel.Password);
             if (result != IdentityResult.Success)
             {
                 return null;
             }
 
-            var newUser = await GetUserAsync(addUserViewModel.Username);
+            User? newUser = await GetUserAsync(addUserViewModel.Username);
             await AddUserToRoleAsyn(newUser, addUserViewModel.UserType.ToString());
 
             return newUser;
@@ -56,12 +56,12 @@ namespace Shopping2022.Helpers
 
         public async Task AddUserToRoleAsyn(User user, string roleName)
         {
-             await _userManager.AddToRoleAsync(user, roleName);
+            await _userManager.AddToRoleAsync(user, roleName);
         }
 
-        public async  Task CheckRoleAsync(string roleName)
+        public async Task CheckRoleAsync(string roleName)
         {
-           var roleExists = await _roleManager.RoleExistsAsync(roleName);
+            bool roleExists = await _roleManager.RoleExistsAsync(roleName);
 
             if (!roleExists)
             {
@@ -76,7 +76,27 @@ namespace Shopping2022.Helpers
         {
             return await _context.Users
                         .Include(u => u.City)
+                        .ThenInclude(c => c.State)
+                        .ThenInclude(c => c.Country)
                         .FirstOrDefaultAsync(u => u.Email == email);
+        }
+
+        public async Task<IdentityResult> ChangePasswordAsync(User user, string oldPassword, string newPassword)
+        {
+            return await _userManager.ChangePasswordAsync(user, oldPassword, newPassword);
+        }
+
+        public async Task<IdentityResult> UpdateUserAsync(User user)
+        {
+            return await _userManager.UpdateAsync(user);
+        }
+        public async Task<User> GetUserAsync(Guid userId)
+        {
+            return await _context.Users
+                        .Include(u => u.City)
+                        .ThenInclude(c => c.State)
+                        .ThenInclude(c => c.Country)
+                        .FirstOrDefaultAsync(u => u.Id == userId.ToString());
         }
 
         public async Task<bool> IsUserInRoleAsync(User user, string roleName)
@@ -86,12 +106,14 @@ namespace Shopping2022.Helpers
 
         public async Task<SignInResult> LoginAsync(LoginViewModel loginViewModel)
         {
-            return await _signInManager.PasswordSignInAsync(loginViewModel.Username,loginViewModel.Password, loginViewModel.RememberMe,false);
+            return await _signInManager.PasswordSignInAsync(loginViewModel.Username, loginViewModel.Password, loginViewModel.RememberMe, false);
         }
 
         public async Task LogoutAsync()
         {
             await _signInManager.SignOutAsync();
         }
+
+
     }
 }

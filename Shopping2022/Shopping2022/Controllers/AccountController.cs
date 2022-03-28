@@ -64,7 +64,7 @@ namespace Shopping2022.Controllers
         [HttpGet]
         public async Task<IActionResult> Register()
         {
-            AddUserViewModel addUserViewModel = new ()
+            AddUserViewModel addUserViewModel = new()
             {
                 Id = Guid.Empty.ToString(),
                 Countries = await _combosHelper.GetComboCountriesAsync(),
@@ -98,15 +98,15 @@ namespace Shopping2022.Controllers
                     ModelState.AddModelError(String.Empty, "Este correo ya está siendo usado.");
 
                     addUserViewModel.Countries = await _combosHelper.GetComboCountriesAsync();
-                    addUserViewModel.States =   await _combosHelper.GetComboStatesByIdAsync(addUserViewModel.CountryId);
-                    addUserViewModel.Cities =   await _combosHelper.GetComboCitiesByIdyAsync(addUserViewModel.CityId);
+                    addUserViewModel.States = await _combosHelper.GetComboStatesByIdAsync(addUserViewModel.CountryId);
+                    addUserViewModel.Cities = await _combosHelper.GetComboCitiesByIdyAsync(addUserViewModel.CityId);
 
                     return View(addUserViewModel);
                 }
 
-                LoginViewModel loginViewModel = new LoginViewModel 
-                { 
-                     Password = addUserViewModel.Password,
+                LoginViewModel loginViewModel = new LoginViewModel
+                {
+                    Password = addUserViewModel.Password,
                     RememberMe = false,
                     Username = addUserViewModel.Username,
                 };
@@ -115,7 +115,7 @@ namespace Shopping2022.Controllers
 
                 if (result.Succeeded)
                     return RedirectToAction("Index", "Home");
-                
+
             }
 
             addUserViewModel.Countries = await _combosHelper.GetComboCountriesAsync();
@@ -123,6 +123,71 @@ namespace Shopping2022.Controllers
             addUserViewModel.Cities = await _combosHelper.GetComboCitiesByIdyAsync(addUserViewModel.CityId);
 
             return View(addUserViewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ChangeUser()
+        {
+            var user = await _userHelper.GetUserAsync(User.Identity.Name);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var editUserViewModel = new EditUserViewModel
+            {
+                Address = user.Address,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                PhoneNumber = user.PhoneNumber,
+                ImageId = user.ImageId,
+                Countries = await _combosHelper.GetComboCountriesAsync(),
+                CountryId = user.City.State.Country.Id,
+                States = await _combosHelper.GetComboStatesByIdAsync(user.City.State.Country.Id),
+                StateId = user.City.State.Id,
+                Cities = await _combosHelper.GetComboCitiesByIdyAsync(user.City.State.Id),
+                CityId = user.City.Id,
+                Id = user.Id,
+                Document = user.Document,
+            };
+
+            return View(editUserViewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangeUser(EditUserViewModel editUserViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                var imageId = editUserViewModel.ImageId;
+
+                if (editUserViewModel.ImageFile != null)
+                {
+                    imageId = await _blobHelper.UploadBlobAsync(editUserViewModel.ImageFile, "users");
+                }
+
+                var user = await _userHelper.GetUserAsync(User.Identity.Name);
+
+                user.FirstName = editUserViewModel.FirstName;
+                user.LastName = editUserViewModel.LastName;
+                user.Document = editUserViewModel.Document;
+                user.Address = editUserViewModel.Address;
+                user.PhoneNumber = editUserViewModel.PhoneNumber;
+                user.ImageId = imageId;
+                user.City = await _context.Cities.FindAsync(editUserViewModel.CityId);
+
+                await _userHelper.UpdateUserAsync(user);
+
+                return RedirectToAction("Index", "Home");
+            }
+
+            editUserViewModel.Countries = await _combosHelper.GetComboCountriesAsync();
+            editUserViewModel.States = await _combosHelper.GetComboStatesByIdAsync(editUserViewModel.CountryId);
+            editUserViewModel.Countries = await _combosHelper.GetComboCitiesByIdyAsync(editUserViewModel.StateId);
+
+            return View(editUserViewModel);
+
         }
 
         public JsonResult GetStates(int countryId)
