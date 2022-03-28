@@ -96,6 +96,7 @@ namespace Shopping2022.Controllers
                 if (user == null)
                 {
                     ModelState.AddModelError(String.Empty, "Este correo ya está siendo usado.");
+
                     addUserViewModel.Countries = await _combosHelper.GetComboCountriesAsync();
                     addUserViewModel.States =   await _combosHelper.GetComboStatesByIdAsync(addUserViewModel.CountryId);
                     addUserViewModel.Cities =   await _combosHelper.GetComboCitiesByIdyAsync(addUserViewModel.CityId);
