@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shopping2022.Data;
 using Shopping2022.Data.Entities;
@@ -192,6 +193,51 @@ namespace Shopping2022.Controllers
             return View(model);
 
         }
+
+        
+        [HttpGet]
+        public async Task<IActionResult> ChangePassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                if (model.OldPassword == model.NewPassword)
+                {
+                    ModelState.AddModelError(string.Empty, "Debes ingresar una contraseña diferente.");
+
+                    return View(model);
+                }
+
+                User user = await _userHelper.GetUserAsync(User.Identity.Name);
+
+                if (user != null)
+                {
+                    IdentityResult result = await _userHelper.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+                    
+                    if (result.Succeeded)
+                    {
+                        return RedirectToAction("ChangeUser");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(String.Empty, result.Errors.FirstOrDefault().Description);
+                    }
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, "Usuario no Encontrado.");
+                }
+            }
+
+            return View(model);
+        }
+
+
 
         public JsonResult GetStates(int countryId)
         {
