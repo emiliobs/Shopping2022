@@ -127,8 +127,6 @@ namespace Shopping2022.Controllers
             return View(addUserViewModel);
         }
 
-
-        [HttpGet]
         public async Task<IActionResult> ChangeUser()
         {
             User user = await _userHelper.GetUserAsync(User.Identity.Name);
@@ -137,7 +135,7 @@ namespace Shopping2022.Controllers
                 return NotFound();
             }
 
-            EditUserViewModel editUserViewModel = new EditUserViewModel
+            EditUserViewModel model = new()
             {
                 Address = user.Address,
                 FirstName = user.FirstName,
@@ -148,16 +146,13 @@ namespace Shopping2022.Controllers
                 CityId = user.City.Id,
                 Countries = await _combosHelper.GetComboCountriesAsync(),
                 CountryId = user.City.State.Country.Id,
-                States = await _combosHelper.GetComboStatesByIdAsync(user.City.State.Country.Id),
                 StateId = user.City.State.Id,
+                States = await _combosHelper.GetComboStatesByIdAsync(user.City.State.Country.Id),
                 Id = user.Id,
                 Document = user.Document
             };
 
-
-
-
-            return View(editUserViewModel);
+            return View(model);
         }
 
         [HttpPost]

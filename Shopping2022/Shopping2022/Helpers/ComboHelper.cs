@@ -40,7 +40,7 @@ namespace Shopping2022.Helpers
 
             list.Insert(0, new SelectListItem 
             { 
-               Text = "Selecciones un Pais.....",
+               Text = "[Selecciones un Pais.....]",
                Value   = "0"
             });
 
@@ -52,12 +52,12 @@ namespace Shopping2022.Helpers
             var list = await _context.States.Where(s => s.Id == countryId).Select(c => new SelectListItem 
             {
                 Text =c.Name,
-                Value="0"
+                Value= c.Id.ToString(),
             }).OrderBy(s => s.Text).ToListAsync();
 
             list.Insert(0, new SelectListItem
             {
-                Text = "Selecciones un Departamento/Estado.....",
+                Text = "[Selecciones un Departamento / Estado.....]",
                 Value = "0"
             });
 
@@ -69,7 +69,7 @@ namespace Shopping2022.Helpers
             var list = await _context.Cities.Where(c => c.Id == stateId).Select(c => new SelectListItem 
             {
               Text=c.Name,
-              Value = "0"
+              Value = c.Id.ToString(),
             }).OrderBy(c => c.Text).ToListAsync();
 
             list.Insert(0, new SelectListItem 
