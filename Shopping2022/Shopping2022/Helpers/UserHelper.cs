@@ -36,7 +36,7 @@ namespace Shopping2022.Helpers
                LastName = addUserViewModel.LastName,
                ImageId = addUserViewModel.ImageId,
                PhoneNumber = addUserViewModel.PhoneNumber,
-               City = await _context.Cities.FindAsync(addUserViewModel.Id),
+               City = await _context.Cities.FindAsync(addUserViewModel.CityId),
                UserName = addUserViewModel.Username,
                UserType = addUserViewModel.UserType
                

@@ -34,8 +34,8 @@ namespace Shopping2022.Helpers
         {
             var list = await _context.Countries.Select(c => new SelectListItem
             {
-                Value = c.Name,
-                Text = c.Id.ToString(),
+                Text = c.Name,
+                Value = c.Id.ToString(),
             }).OrderBy(c => c.Text).ToListAsync();
 
             list.Insert(0, new SelectListItem 

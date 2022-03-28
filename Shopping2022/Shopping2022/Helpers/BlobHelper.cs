@@ -9,9 +9,13 @@ namespace Shopping2022.Helpers
 
         public BlobHelper(IConfiguration configuration)
         {
-            string? keys = configuration.GetConnectionString("Blob:ConnectionString");
-            CloudStorageAccount? storageAccount = CloudStorageAccount.Parse(keys);
-            _blobClient = storageAccount.CreateCloudBlobClient();
+            //string keys = configuration["Blob:ConnectionString"];
+            //CloudStorageAccount storageAccount = CloudStorageAccount.Parse(keys);
+            //_blobClient = storageAccount.CreateCloudBlobClient();
+
+            string keys = configuration["Blob:connectionstring"];
+            CloudStorageAccount storageaccount = CloudStorageAccount.Parse(keys);   
+            _blobClient = storageaccount.CreateCloudBlobClient();
         }
 
         public async Task<Guid> UploadBlobAsync(IFormFile file, string containerName)
