@@ -1,9 +1,10 @@
 ﻿@model Shopping2022.Models.EditUserViewModel
+
 @{
     ViewData["Title"] = "Edit";
 }
 
-<h2>Editar Usuario</h2>
+<h2>Editar Uaurio</h2>
 
 
 <hr />
@@ -12,6 +13,7 @@
         <form asp-action="ChangeUser" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
+            
             <input type="hidden" asp-for="ImageId" />
             <input type="hidden" asp-for="Countries" />
             <input type="hidden" asp-for="States" />
@@ -32,12 +34,13 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
     <script type="text/javascript">
         $(document).ready(function () {
             $("#CountryId").change(function () {
                 debugger;
                 $("#StateId").empty();
-                $("#StateId").append('<option value="0">[Selecciona un Departamento / Estado...]</option>');
+                $("#StateId").append('<option value="0">[Selecciona un departamento/estado...]</option>');
                 $("#CityId").empty();
                 $("#CityId").append('<option value="0">[Selecciona una ciudad...]</option>');
                 $.ajax({
@@ -84,4 +87,3 @@
         });
     </script>
 }
-
