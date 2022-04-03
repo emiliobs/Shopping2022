@@ -288,6 +288,88 @@ namespace Shopping2022.Controllers
             return View(model);
         }
 
+        [HttpGet]
+        public IActionResult RecoverPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RecoverPassword(RecoverPasswordViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userHelper.GetUserAsync(model.Email);
+                if (user is null)
+                {
+                    ModelState.AddModelError(String.Empty, "El Email no corresponde a ningun usuario registrado.");
+
+                    return View(model);
+                }
+
+                var myToken = await _userHelper.GeneratePasswordResetTokenAsync(user);
+                string tokenLink = Url.Action("ResetPassword", "Account", new
+                {
+                   token = myToken
+                }, protocol: HttpContext.Request.Scheme);
+
+                Response response = _mailHelper.SendMail(
+                                                          $"{user.FullName}",
+                                                          model.Email,
+                                                          "Shopping - Recuperación de Contraseña",
+                                                          $"<h1>Shopping - Recuperación de Contraseña</h1>" +
+                                                          $"Para recuperar la contraseña favor hacer click en el siguiente link:, " +
+                                                          $"<hr/><br><p><a Class=\"color btn btn-primary\" href = \"{tokenLink}\" style='color:blue'>Reset Password</a></p>");
+
+                if (response.IsSuccess)
+                {
+                    ViewBag.Message = "Las instrucciones para recuperar la contraseña han sido enviadas a su Correo.";
+
+                    return View(model);
+                }
+
+                ModelState.AddModelError(String.Empty, response.Message);
+
+            }
+
+            return View(model);
+        }
+
+        [HttpGet]
+        public IActionResult ResetPassword(string token)
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userHelper.GetUserAsync(model.UserName);
+                if (user is not null)
+                {
+                    var result = await _userHelper.ResetPasswordAsync(user, model.Token, model.Password);
+                    if (result.Succeeded)
+                    {
+                        ViewBag.Message = "Contraseña cambiada con éxito";
+
+                        return View();
+                    }
+
+                    ViewBag.Message = "Error cambiando la Contraseña.";
+                    return View(model);
+
+                }
+
+                return View(model);
+            }
+
+            ViewBag.Message = "Usuario no encontrado..";
+            
+            return View(model);
+        }
+
         public JsonResult GetStates(int countryId)
         {
             Country? country = _context.Countries
