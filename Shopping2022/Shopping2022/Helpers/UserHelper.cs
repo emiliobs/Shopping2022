@@ -114,6 +114,11 @@ namespace Shopping2022.Helpers
             await _signInManager.SignOutAsync();
         }
 
+        public async Task<string> GenerateEmailConfirmationTokenAsync(User user) => await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
+
+
+        public async Task<IdentityResult> ConfirmEmailAsync(User user, string token) => await _userManager.ConfirmEmailAsync(user, token);
+        
     }
 }

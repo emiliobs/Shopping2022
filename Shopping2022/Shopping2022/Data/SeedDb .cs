@@ -47,6 +47,9 @@ namespace Shopping2022.Data
                 await _userHelper.AddUserAsync(user, "Eabs123.");
                 await _userHelper.AddUserToRoleAsyn(user, userType.ToString());
 
+                var token = await _userHelper.GenerateEmailConfirmationTokenAsync(user);
+                await _userHelper.ConfirmEmailAsync(user, token);
+
             }
 
             return user;

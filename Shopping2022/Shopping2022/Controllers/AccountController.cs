@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Shopping2022.Common;
 using Shopping2022.Data;
 using Shopping2022.Data.Entities;
 using Shopping2022.Enums;
@@ -16,13 +17,16 @@ namespace Shopping2022.Controllers
         private readonly DataContext _context;
         private readonly ICombosHelper _combosHelper;
         private readonly IBlobHelper _blobHelper;
+        private readonly IMailHelper _mailHelper;
 
-        public AccountController(IUserHelper userHelper, DataContext context, ICombosHelper combosHelper, IBlobHelper blobHelper)
+        public AccountController(IUserHelper userHelper, DataContext context, ICombosHelper combosHelper,
+                                IBlobHelper blobHelper, IMailHelper mailHelper)
         {
             _userHelper = userHelper;
             _context = context;
             _combosHelper = combosHelper;
             _blobHelper = blobHelper;
+            _mailHelper = mailHelper;
         }
 
         [HttpGet]
@@ -48,12 +52,16 @@ namespace Shopping2022.Controllers
 
                 if (result.IsLockedOut)
                 {
-                    ModelState.AddModelError(String.Empty, "Ha superado el máximo número de intentos, su cuenta está bloqeada, intente de nuevo en 5 minutos.");
+                    ModelState.AddModelError(string.Empty, "Ha superado el máximo número de intentos, su cuenta está bloqeada, intente de nuevo en 5 minutos.");
+                }
+                else if(result.IsNotAllowed)
+                {
+                    ModelState.AddModelError(string.Empty, "El usuario no ha sido habilitado, debes de seguir las instrucciones del correo enviado para poder habilitarte en el Sistema.");
                 }
                 else
                 {
 
-                    ModelState.AddModelError(string.Empty, "Email o Contraseña incorrectos"); 
+                    ModelState.AddModelError(string.Empty, "Email o Contraseña incorrectos");
                 }
 
             }
@@ -103,7 +111,7 @@ namespace Shopping2022.Controllers
                 }
 
                 addUserViewModel.ImageId = imageId;
-                User? user = await _userHelper.AddUserAsync(addUserViewModel);
+                User user = await _userHelper.AddUserAsync(addUserViewModel);
                 if (user == null)
                 {
                     ModelState.AddModelError(string.Empty, "Este correo ya está siendo usado.");
@@ -115,19 +123,30 @@ namespace Shopping2022.Controllers
                     return View(addUserViewModel);
                 }
 
-                LoginViewModel loginViewModel = new LoginViewModel
+                string myToken = await _userHelper.GenerateEmailConfirmationTokenAsync(user);
+                string tokenLink = Url.Action("ConfirmEmail", "Account", new
                 {
-                    Password = addUserViewModel.Password,
-                    RememberMe = false,
-                    Username = addUserViewModel.Username,
-                };
+                    userid = user.Id,
+                    token = myToken
+                }, protocol: HttpContext.Request.Scheme);
 
-                Microsoft.AspNetCore.Identity.SignInResult? result = await _userHelper.LoginAsync(loginViewModel);
+                Response response = _mailHelper.SendMail(
+                                                          $"{addUserViewModel.FirstName} {addUserViewModel.LastName}",
+                                                          addUserViewModel.Username,
+                                                          "Shopping - Confirmación de Email",
+                                                          $"<h1>Shopping - Confirmación de Email</h1>" +
+                                                          $"Para habilitar el usuario por favor hacer click en el siguiente link:, " +
+                                                          $"<hr/><br><p><a Class=\"color btn btn-primary\" href = \"{tokenLink}\" style='color:blue'>Confirmar Email</a></p>");
 
-                if (result.Succeeded)
+                if (response.IsSuccess)
                 {
-                    return RedirectToAction("Index", "Home");
+                    ViewBag.Message = "Las instrucciones para habilitar el usuario han sido enviadas al Correo.";
+
+                    return View(addUserViewModel);
                 }
+
+                ModelState.AddModelError(String.Empty,response.Message);
+
             }
 
             addUserViewModel.Countries = await _combosHelper.GetComboCountriesAsync();
@@ -135,6 +154,29 @@ namespace Shopping2022.Controllers
             addUserViewModel.Cities = await _combosHelper.GetComboCitiesByIdyAsync(addUserViewModel.CityId);
 
             return View(addUserViewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        {
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
+            {
+                return NotFound();
+            }
+
+            var user = await _userHelper.GetUserAsync(new Guid(userId));
+            if (user is null)
+            {
+                return NotFound();
+            }
+
+            var result = await _userHelper.ConfirmEmailAsync(user, token);
+            if (!result.Succeeded)
+            {
+                return NotFound();
+            }
+
+            return View(result);
         }
 
         public async Task<IActionResult> ChangeUser()
@@ -203,7 +245,7 @@ namespace Shopping2022.Controllers
 
         }
 
-        
+
         [HttpGet]
         public async Task<IActionResult> ChangePassword()
         {
@@ -227,14 +269,14 @@ namespace Shopping2022.Controllers
                 if (user != null)
                 {
                     IdentityResult result = await _userHelper.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
-                    
+
                     if (result.Succeeded)
                     {
                         return RedirectToAction("ChangeUser");
                     }
                     else
                     {
-                        ModelState.AddModelError(String.Empty, result.Errors.FirstOrDefault().Description);
+                        ModelState.AddModelError(string.Empty, result.Errors.FirstOrDefault().Description);
                     }
                 }
                 else
@@ -245,8 +287,6 @@ namespace Shopping2022.Controllers
 
             return View(model);
         }
-
-
 
         public JsonResult GetStates(int countryId)
         {

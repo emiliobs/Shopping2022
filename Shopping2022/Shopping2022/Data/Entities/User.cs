@@ -37,7 +37,7 @@ namespace Shopping2022.Data.Entities
             ? $"https://localhost:7264/images/noimage.png"
             : $"https://shoppingzulu.blob.core.windows.net/users/{ImageId}";
 
-        [Display(Name = "Tipo de Usuario")]
+        [Display(Name = "Tipo")]
         public UserType UserType { get; set; }
 
 

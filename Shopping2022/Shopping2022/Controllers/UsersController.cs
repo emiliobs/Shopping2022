@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Shopping2022.Common;
 using Shopping2022.Data;
 using Shopping2022.Data.Entities;
 using Shopping2022.Enums;
@@ -16,13 +17,15 @@ namespace Shopping2022.Controllers
         private readonly IUserHelper _userHelper;
         private readonly ICombosHelper _combosHelper;
         private readonly IBlobHelper _blobHelper;
+        private readonly IMailHelper _mailHelper;
 
-        public UsersController(DataContext context, IUserHelper userHelper, ICombosHelper combosHelper, IBlobHelper blobHelper)
+        public UsersController(DataContext context, IUserHelper userHelper, ICombosHelper combosHelper, IBlobHelper blobHelper, IMailHelper mailHelper)
         {
             _context = context;
             _userHelper = userHelper;
             _combosHelper = combosHelper;
             _blobHelper = blobHelper;
+            _mailHelper = mailHelper;
         }
 
 
@@ -76,7 +79,29 @@ namespace Shopping2022.Controllers
                     return View(addUserViewModel);
                 }
 
-                return RedirectToAction("Index", "Users");
+                string myToken = await _userHelper.GenerateEmailConfirmationTokenAsync(user);
+                string tokenLink = Url.Action("ConfirmEmail", "Account", new
+                {
+                    userid = user.Id,
+                    token = myToken
+                }, protocol: HttpContext.Request.Scheme);
+
+                Response response = _mailHelper.SendMail(
+                                                          $"{addUserViewModel.FirstName} {addUserViewModel.LastName}",
+                                                          addUserViewModel.Username,
+                                                          "Shopping - Confirmación de Email",
+                                                          $"<h1>Shopping - Confirmación de Email</h1>" +
+                                                          $"Para habilitar el Administrador por favor hacer click en el siguiente link:, " +
+                                                          $"<hr/><br><p><a Class='color' href = \"{tokenLink}\" style='color:blue'>Confirmar Email</a></p>");
+
+                if (response.IsSuccess)
+                {
+                    ViewBag.Message = "Las instrucciones para habilitar el Administrador han sido enviadas al Correo.";
+
+                    return View(addUserViewModel);
+                }
+
+                ModelState.AddModelError(String.Empty, response.Message);
 
             }
 
