@@ -106,7 +106,7 @@ namespace Shopping2022.Helpers
 
         public async Task<SignInResult> LoginAsync(LoginViewModel loginViewModel)
         {
-            return await _signInManager.PasswordSignInAsync(loginViewModel.Username, loginViewModel.Password, loginViewModel.RememberMe, false);
+            return await _signInManager.PasswordSignInAsync(loginViewModel.Username, loginViewModel.Password, loginViewModel.RememberMe, true);
         }
 
         public async Task LogoutAsync()
