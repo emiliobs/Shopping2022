@@ -16,7 +16,7 @@
             <th>
                 @Html.DisplayNameFor(model => model.Name)
             </th>
-            
+
             <th></th>
         </tr>
     </thead>
@@ -27,11 +27,12 @@
                 <td>
                     @Html.DisplayFor(modelItem => item.Name)
                 </td>
-               
+
                 <td>
-                    <a asp-action="Edit" class="btn btn-outline-warning" asp-route-id="@item.Id">Editar</a> |
-                    <a asp-action="Details" class="btn btn-outline-info" asp-route-id="@item.Id">Detalles</a> |
-                    <a asp-action="Delete" class="btn btn-outline-danger" asp-route-id="@item.Id">Borrar</a>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-warning"><i class="fa-solid fa-pen-to-square"></i></a>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-info"><i class="fa-solid fa-circle-info"></i></a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger"><i class="fa-solid fa-trash"></i></a>
+
                 </td>
             </tr>
         }
@@ -39,7 +40,9 @@
 </table>
 
 @section Scripts{
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+}
 
 @*<partial name="_ValidationScriptsPartial"></partial>*@
 <script type="text/javascript">

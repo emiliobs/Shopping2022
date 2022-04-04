@@ -10,13 +10,15 @@
     <partial name="_CountryDetails" />
 </div>
 <div>
+    
     <a asp-action="Edit" class="btn btn-outline-warning" asp-route-id="@Model?.Id">Editar País</a> |
     <a asp-action="AddState" class="btn btn-outline-primary" asp-route-id="@Model?.Id">Agregar Departamento/Estado</a> |
     <a asp-action="Index" class="btn btn-outline-dark">Regresar</a>
+
 </div>
 <hr />
 
-  <h1>Departamentos/Estados</h1>
+<h1>Departamentos/Estados</h1>
 
 <table id="mytable" class="table table-hover table-responsive table-striped" style="width:100%">
     <thead>
@@ -41,9 +43,12 @@
                     @Html.DisplayFor(modelItem => item.CitiesNumber)
                 </td>
                 <td>
-                    <a asp-action="EditState" class="btn btn-outline-warning" asp-route-id="@item.Id">Editar</a> |
-                    <a asp-action="DetailsState" class="btn btn-outline-info" asp-route-id="@item.Id">Detalles</a> |
-                    <a asp-action="DeleteState" class="btn btn-outline-danger" asp-route-id="@item.Id">Borrar</a>
+
+                    <a asp-action="EditState" asp-route-id="@item.Id" class="btn btn-outline-warning"><i class="fa-solid fa-pen-to-square"></i></a>
+                    <a asp-action="DetailsState" asp-route-id="@item.Id" class="btn btn-outline-info"><i class="fa-solid fa-circle-info"></i></a>
+                    <a asp-action="DeleteState" asp-route-id="@item.Id" class="btn btn-outline-danger"><i class="fa-solid fa-trash"></i></a>                  
+
+
                 </td>
             </tr>
         }
@@ -51,7 +56,9 @@
 </table>
 
 @section Scripts{
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+}
 
 @*<partial name="_ValidationScriptsPartial"></partial>*@
 <script type="text/javascript">
