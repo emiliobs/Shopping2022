@@ -10,6 +10,8 @@ namespace Shopping2022.Data.Entities
         [MaxLength(50, ErrorMessage = "El campo {0} debe tener máximo {1} caractéres.")]
         [Display(Name = "Categoría")]
         public string Name { get; set; }
-        
+
+        public ICollection<ProductCategory> productCategories { get; set; }
+
     }
 }
