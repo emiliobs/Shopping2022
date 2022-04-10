@@ -137,14 +137,14 @@ namespace Shopping2022.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, CreateProductViewModel model)
+        public async Task<IActionResult> Edit( int id, CreateProductViewModel model)
         {
             if (id != model.Id)
             {
                 return NotFound();
             }
-
-
+            
+           
                 try
                 {
                     Product product = await _context.Products.FindAsync(model.Id);
@@ -174,10 +174,34 @@ namespace Shopping2022.Controllers
                 {
 
                     ModelState.AddModelError(string.Empty, ex.Message);
-                }
+                } 
+            
             
 
             return View(model);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id is null)
+            {
+                NotFound();
+            }
+
+            var product = await _context.Products
+                                        .Include(p => p.ProductImages)
+                                        .Include(p => p.ProductCategories)
+                                        .ThenInclude(pc => pc.Category)
+                                        .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (product is null)
+            {
+                return NotFound();
+            }
+
+            return View(product);
+        }
+
     }
 }
