@@ -233,10 +233,10 @@ namespace Shopping2022.Controllers
 
             if (ModelState.IsValid)
             {
-                var imageId = await _blobHelper.UploadBlobAsync(model.ImageFile, "products");
-                var product = await _context.Products.FindAsync(model.ProductId);
+                Guid imageId = await _blobHelper.UploadBlobAsync(model.ImageFile, "products");
+                Product product = await _context.Products.FindAsync(model.ProductId);
 
-                var productImage = new ProductImage
+                ProductImage productImage = new ProductImage
                 {
                     Product = product,
                     ImageId = imageId,
@@ -257,6 +257,28 @@ namespace Shopping2022.Controllers
             }
 
             return View(model);
+        }
+
+        public async Task<IActionResult> DeleteImage(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            ProductImage productImage = await _context.ProductImages.Include(pi => pi.Product).FirstOrDefaultAsync(pi => pi.Id == id);
+
+            if (productImage == null)
+            {
+                return NotFound();
+            }
+
+            await _blobHelper.DeleteBlobAsync(productImage.ImageId, "products");
+            _context.ProductImages.Remove(productImage);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Details), new { id = productImage.Product.Id });
+
         }
 
     }

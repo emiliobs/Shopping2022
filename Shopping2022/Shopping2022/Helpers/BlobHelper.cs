@@ -14,7 +14,7 @@ namespace Shopping2022.Helpers
             //_blobClient = storageAccount.CreateCloudBlobClient();
 
             string keys = configuration["Blob:connectionstring"];
-            CloudStorageAccount storageaccount = CloudStorageAccount.Parse(keys);   
+            CloudStorageAccount storageaccount = CloudStorageAccount.Parse(keys);
             _blobClient = storageaccount.CreateCloudBlobClient();
         }
 
@@ -46,18 +46,30 @@ namespace Shopping2022.Helpers
 
         public async Task DeleteBlobAsync(Guid id, string containerName)
         {
-            CloudBlobContainer? container = _blobClient.GetContainerReference(containerName);
-            CloudBlockBlob? blockBlob = container.GetBlockBlobReference($"{id}");
-            await blockBlob.DeleteAsync();
+            try
+            {
+                CloudBlobContainer container = _blobClient.GetContainerReference(containerName);
+                CloudBlockBlob blockBlob = container.GetBlockBlobReference($"{id}");
+                await blockBlob.DeleteAsync();
+            }
+            catch
+            {
+
+            }
         }
 
         private async Task<Guid> UploadBlobAsync(Stream stream, string containerName)
         {
-            Guid name = Guid.NewGuid();
-            CloudBlobContainer? container = _blobClient.GetContainerReference(containerName);
-            CloudBlockBlob? blockBlob = container.GetBlockBlobReference($"{name}");
-            await blockBlob.UploadFromStreamAsync(stream);
-            return name;
+            
+            
+                Guid name = Guid.NewGuid();
+                CloudBlobContainer? container = _blobClient.GetContainerReference(containerName);
+                CloudBlockBlob? blockBlob = container.GetBlockBlobReference($"{name}");
+                await blockBlob.UploadFromStreamAsync(stream);
+            
+                return name;
+           
+
         }
     }
 }
