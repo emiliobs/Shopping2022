@@ -281,5 +281,97 @@ namespace Shopping2022.Controllers
 
         }
 
+        [HttpGet]
+        public async Task<IActionResult> AddCategory(int? id)
+        {
+            if (id is null)
+            {
+                return NotFound();
+            }
+
+            Product product = await _context.Products.FindAsync(id);
+
+            if (product is null)
+            {
+                return NotFound();
+            }
+
+            AddCategoryProductViewModel model = new AddCategoryProductViewModel
+            {
+                ProductId = product.Id,
+                Categories = await _combosHelper.GetComboCategoriesAsync(),
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddCategory(AddCategoryProductViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                Product product = await _context.Products.FindAsync(model.ProductId);
+                if (product is null)
+                {
+                    return NotFound();
+                }
+
+                ProductCategory productCategory = new ProductCategory
+                {
+                    Category = await _context.Categories.FindAsync(model.CategoryId),
+                    Product = product,
+                };
+
+                try
+                {
+                    _context.Add(productCategory);
+                    await _context.SaveChangesAsync();
+
+                    return RedirectToAction(nameof(Details), new { id = product.Id });
+                }
+                catch (DbUpdateException dbUpdateException)
+                {
+                    if (dbUpdateException.InnerException.Message.Contains("duplicate"))
+                    {
+                        ModelState.AddModelError(string.Empty, "El Prodycto ya tiene esa Categoría.");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                    }
+                }
+                catch (Exception ex)
+                {
+
+                    ModelState.AddModelError(string.Empty, ex.Message);
+                }
+            }
+
+            model.Categories = await _combosHelper.GetComboCategoriesAsync();
+
+            return View(model);
+        }
+
+        public async Task<IActionResult> DeleteCategory(int? id)
+        {
+            if (id is null)
+            {
+                return NotFound();
+            }
+
+            ProductCategory productCategory = await _context.ProductCategories.Include(pc => pc.Product).FirstOrDefaultAsync(pc => pc.Id == id);
+
+            if (productCategory is null)
+            {
+                return NotFound();
+            }
+
+            _context.ProductCategories.Remove(productCategory);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Details), new { id = productCategory.Product.Id });
+        }
+
     }
 }
