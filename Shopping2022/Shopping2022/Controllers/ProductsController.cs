@@ -34,7 +34,7 @@ namespace Shopping2022.Controllers
         [HttpGet]
         public async Task<IActionResult> Create()
         {
-            CreateProductViewModel model = new CreateProductViewModel
+            CreateProductViewModel model = new()
             {
                 Categories = await _combosHelper.GetComboCategoriesAsync(),
             };
@@ -82,8 +82,8 @@ namespace Shopping2022.Controllers
 
                 try
                 {
-                    _context.Add(product);
-                    await _context.SaveChangesAsync();
+                    _ = _context.Add(product);
+                    _ = await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateException dbUpdateException)
@@ -122,7 +122,7 @@ namespace Shopping2022.Controllers
                 return NotFound();
             }
 
-            EditProductViewModel model = new EditProductViewModel
+            EditProductViewModel model = new()
             {
                 Description = product.Description,
                 Id = product.Id,
@@ -155,7 +155,7 @@ namespace Shopping2022.Controllers
                 product.Stock = model.Stock;
 
                 _context.UpdateRange(product);
-                await _context.SaveChangesAsync();
+                _ = await _context.SaveChangesAsync();
 
                 return RedirectToAction(nameof(Index));
             }
@@ -186,7 +186,7 @@ namespace Shopping2022.Controllers
         {
             if (id is null)
             {
-                NotFound();
+                _ = NotFound();
             }
 
             Product product = await _context.Products
@@ -195,12 +195,7 @@ namespace Shopping2022.Controllers
                                         .ThenInclude(pc => pc.Category)
                                         .FirstOrDefaultAsync(p => p.Id == id);
 
-            if (product is null)
-            {
-                return NotFound();
-            }
-
-            return View(product);
+            return product is null ? NotFound() : View(product);
         }
 
         [HttpGet]
@@ -218,7 +213,7 @@ namespace Shopping2022.Controllers
                 return NotFound();
             }
 
-            AddProductImageViewModel model = new AddProductImageViewModel
+            AddProductImageViewModel model = new()
             {
                 ProductId = product.Id,
             };
@@ -236,7 +231,7 @@ namespace Shopping2022.Controllers
                 Guid imageId = await _blobHelper.UploadBlobAsync(model.ImageFile, "products");
                 Product product = await _context.Products.FindAsync(model.ProductId);
 
-                ProductImage productImage = new ProductImage
+                ProductImage productImage = new()
                 {
                     Product = product,
                     ImageId = imageId,
@@ -244,10 +239,10 @@ namespace Shopping2022.Controllers
 
                 try
                 {
-                    _context.Add(productImage);
-                    await _context.SaveChangesAsync();
+                    _ = _context.Add(productImage);
+                    _ = await _context.SaveChangesAsync();
 
-                    return RedirectToAction(nameof(Details), new { Id = product.Id });
+                    return RedirectToAction(nameof(Details), new { product.Id });
                 }
                 catch (Exception ex)
                 {
@@ -274,8 +269,8 @@ namespace Shopping2022.Controllers
             }
 
             await _blobHelper.DeleteBlobAsync(productImage.ImageId, "products");
-            _context.ProductImages.Remove(productImage);
-            await _context.SaveChangesAsync();
+            _ = _context.ProductImages.Remove(productImage);
+            _ = await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Details), new { id = productImage.Product.Id });
 
@@ -296,7 +291,7 @@ namespace Shopping2022.Controllers
                 return NotFound();
             }
 
-            AddCategoryProductViewModel model = new AddCategoryProductViewModel
+            AddCategoryProductViewModel model = new()
             {
                 ProductId = product.Id,
                 Categories = await _combosHelper.GetComboCategoriesAsync(),
@@ -317,7 +312,7 @@ namespace Shopping2022.Controllers
                     return NotFound();
                 }
 
-                ProductCategory productCategory = new ProductCategory
+                ProductCategory productCategory = new()
                 {
                     Category = await _context.Categories.FindAsync(model.CategoryId),
                     Product = product,
@@ -325,8 +320,8 @@ namespace Shopping2022.Controllers
 
                 try
                 {
-                    _context.Add(productCategory);
-                    await _context.SaveChangesAsync();
+                    _ = _context.Add(productCategory);
+                    _ = await _context.SaveChangesAsync();
 
                     return RedirectToAction(nameof(Details), new { id = product.Id });
                 }
@@ -367,10 +362,46 @@ namespace Shopping2022.Controllers
                 return NotFound();
             }
 
-            _context.ProductCategories.Remove(productCategory);
-            await _context.SaveChangesAsync();
+            _ = _context.ProductCategories.Remove(productCategory);
+            _ = await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Details), new { id = productCategory.Product.Id });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id is null)
+            {
+                return NotFound();
+            }
+
+            Product product = await _context.Products
+                .Include(p => p.ProductCategories)
+                .Include(p => p.ProductImages)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            return product is null ? NotFound() : View(product);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(Product model)
+        {
+            Product product = await _context.Products
+                .Include(p => p.ProductImages)
+                .Include(p => p.ProductCategories)
+                .FirstOrDefaultAsync(p => p.Id == model.Id);
+
+            _context.Products.Remove(product);
+            await _context.SaveChangesAsync();
+
+            foreach (ProductImage productImage in product.ProductImages)
+            {
+                await _blobHelper.DeleteBlobAsync(productImage.ImageId, "products");
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
     }
