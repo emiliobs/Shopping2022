@@ -137,46 +137,46 @@ namespace Shopping2022.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit( int id, CreateProductViewModel model)
+        public async Task<IActionResult> Edit(int id, CreateProductViewModel model)
         {
             if (id != model.Id)
             {
                 return NotFound();
             }
-            
-           
-                try
+
+
+            try
+            {
+                Product product = await _context.Products.FindAsync(model.Id);
+
+                product.Description = model.Description;
+                product.Name = model.Name;
+                product.Price = model.Price;
+                product.Stock = model.Stock;
+
+                _context.UpdateRange(product);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch (DbUpdateException dbUpdateException)
+            {
+                if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                 {
-                    Product product = await _context.Products.FindAsync(model.Id);
-
-                    product.Description = model.Description;
-                    product.Name = model.Name;
-                    product.Price = model.Price;
-                    product.Stock = model.Stock;
-
-                    _context.UpdateRange(product);
-                    await _context.SaveChangesAsync();
-
-                    return RedirectToAction(nameof(Index));
+                    ModelState.AddModelError(string.Empty, "Ya existe un producto con el mismo nombre.");
                 }
-                catch (DbUpdateException dbUpdateException)
+                else
                 {
-                    if (dbUpdateException.InnerException.Message.Contains("duplicate"))
-                    {
-                        ModelState.AddModelError(string.Empty, "Ya existe un producto con el mismo nombre.");
-                    }
-                    else
-                    {
-                        ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
-                    }
+                    ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
                 }
-                catch (Exception ex)
-                {
+            }
+            catch (Exception ex)
+            {
 
-                    ModelState.AddModelError(string.Empty, ex.Message);
-                } 
-            
-            
+                ModelState.AddModelError(string.Empty, ex.Message);
+            }
+
+
 
             return View(model);
         }
@@ -189,7 +189,7 @@ namespace Shopping2022.Controllers
                 NotFound();
             }
 
-            var product = await _context.Products
+            Product product = await _context.Products
                                         .Include(p => p.ProductImages)
                                         .Include(p => p.ProductCategories)
                                         .ThenInclude(pc => pc.Category)
@@ -201,6 +201,62 @@ namespace Shopping2022.Controllers
             }
 
             return View(product);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> AddImage(int? id)
+        {
+            if (id is null)
+            {
+                return NotFound();
+            }
+
+            Product product = await _context.Products.FindAsync(id);
+
+            if (product is null)
+            {
+                return NotFound();
+            }
+
+            AddProductImageViewModel model = new AddProductImageViewModel
+            {
+                ProductId = product.Id,
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddImage(AddProductImageViewModel model)
+        {
+
+            if (ModelState.IsValid)
+            {
+                var imageId = await _blobHelper.UploadBlobAsync(model.ImageFile, "products");
+                var product = await _context.Products.FindAsync(model.ProductId);
+
+                var productImage = new ProductImage
+                {
+                    Product = product,
+                    ImageId = imageId,
+                };
+
+                try
+                {
+                    _context.Add(productImage);
+                    await _context.SaveChangesAsync();
+
+                    return RedirectToAction(nameof(Details), new { Id = product.Id });
+                }
+                catch (Exception ex)
+                {
+
+                    ModelState.AddModelError(string.Empty, ex.Message);
+                }
+            }
+
+            return View(model);
         }
 
     }
