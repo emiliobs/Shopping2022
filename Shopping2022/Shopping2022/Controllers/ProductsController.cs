@@ -284,17 +284,26 @@ namespace Shopping2022.Controllers
                 return NotFound();
             }
 
-            Product product = await _context.Products.FindAsync(id);
+            Product product = await _context.Products
+                .Include(p => p.ProductCategories)
+                .ThenInclude(pc => pc.Category)
+                .FirstOrDefaultAsync(p => p.Id == id);
 
             if (product is null)
             {
                 return NotFound();
             }
 
+            IEnumerable<Category> categories = product.ProductCategories.Select(pc => new Category
+            {
+                Id = pc.Category.Id,
+                Name = pc.Category.Name,
+            });
+
             AddCategoryProductViewModel model = new()
             {
                 ProductId = product.Id,
-                Categories = await _combosHelper.GetComboCategoriesAsync(),
+                Categories = await _combosHelper.GetComboCategoriesAsync(categories),
             };
 
             return View(model);
@@ -304,9 +313,14 @@ namespace Shopping2022.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddCategory(AddCategoryProductViewModel model)
         {
+
+            Product product = await _context.Products
+             .Include(p => p.ProductCategories)
+             .ThenInclude(pc => pc.Category)
+             .FirstOrDefaultAsync(p => p.Id == model.ProductId);
+
             if (ModelState.IsValid)
             {
-                Product product = await _context.Products.FindAsync(model.ProductId);
                 if (product is null)
                 {
                     return NotFound();
@@ -343,7 +357,13 @@ namespace Shopping2022.Controllers
                 }
             }
 
-            model.Categories = await _combosHelper.GetComboCategoriesAsync();
+            IEnumerable<Category> categories = product.ProductCategories.Select(pc => new Category
+            {
+                Id = pc.Category.Id,
+                Name = pc.Category.Name,
+            });
+
+            model.Categories = await _combosHelper.GetComboCategoriesAsync(categories);
 
             return View(model);
         }
@@ -393,8 +413,8 @@ namespace Shopping2022.Controllers
                 .Include(p => p.ProductCategories)
                 .FirstOrDefaultAsync(p => p.Id == model.Id);
 
-            _context.Products.Remove(product);
-            await _context.SaveChangesAsync();
+            _ = _context.Products.Remove(product);
+            _ = await _context.SaveChangesAsync();
 
             foreach (ProductImage productImage in product.ProductImages)
             {
