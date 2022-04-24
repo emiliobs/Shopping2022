@@ -1,10 +1,19 @@
-﻿@model IEnumerable<Shopping2022.Models.ProductHomeViewModel>
-
+﻿@model Shopping2022.Models.HomeViewModel
 @{
     ViewData["Title"] = "Index";
 }
 
-@foreach (var item in Model)
+<div style="text-align:right;">
+
+    @if (Model.Quantity > 0)
+    {
+        <a asp-action="ShowCar" class="btn btn-outline-primary">Ver Carro de Compras (@Model.Quantity)</a>
+    }
+</div>
+
+<hr />
+
+@foreach (var item in Model.Products)
 {
     <div class="row">
         @if (item.Product1 != null)

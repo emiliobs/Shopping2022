@@ -33,6 +33,7 @@ body {
     border-radius: 15px;
     font-family: sans-serif;
     margin: 5px;
+    
 }
 
 .card_title {
@@ -49,6 +50,7 @@ body {
     border-radius: 0 0 15px 15px;
     padding: 10px;
     text-align: center;
+   
 }
 
 .foot a {
@@ -63,7 +65,8 @@ body {
         bottom: 0;
         left: 0;
         z-index: 1;
-        content: ""
+        content: "";
+
     }
 
 
