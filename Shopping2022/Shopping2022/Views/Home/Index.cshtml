@@ -22,7 +22,10 @@
                 <div class="card">
                     <div class="card_title">@item.Product1.Name</div>
                     <div class="card_body">
+                        <div class="zoom">
                         <img src="@item.Product1.ImageFullPath" style="height:150px; max-height:150px; max-width:280px;" />
+
+                        </div>
                         <p class="mt-2">
                             @item.Product1.Description
                             <h4>@Html.DisplayFor(modelItem => item.Product1.Price)</h4>
@@ -41,7 +44,10 @@
                 <div class="card">
                     <div class="card_title">@item.Product2.Name</div>
                     <div class="card_body">
-                        <img src="@item.Product2.ImageFullPath" style="height:150px; max-width:280px;" />
+                        <div class="zoom">
+
+                            <img src="@item.Product2.ImageFullPath" style="height:150px; max-width:280px;" />
+                        </div>
                         <p class="mt-2">
                             @item.Product2.Description
                             <h4>@Html.DisplayFor(modelItem => item.Product2.Price)</h4>
@@ -60,7 +66,10 @@
                 <div class="card">
                     <div class="card_title">@item.Product3.Name</div>
                     <div class="card_body">
+                        <div class="zoom">
+
                         <img src="@item.Product3.ImageFullPath" style="height:150px; max-width:280px;" />
+                        </div>
                         <p class="mt-2">
                             @item.Product3.Description
                             <h4>@Html.DisplayFor(modelItem => item.Product3.Price)</h4>
@@ -79,7 +88,10 @@
                 <div class="card">
                     <div class="card_title">@item.Product4.Name</div>
                     <div class="card_body">
+                        <div class="zoom">
+
                         <img src="@item.Product4.ImageFullPath" style="height:150px; max-width:280px;" />
+                        </div>
                         <p class="mt-2">
                             @item.Product4.Description
                             <h4>@Html.DisplayFor(modelItem => item.Product4.Price)</h4>
