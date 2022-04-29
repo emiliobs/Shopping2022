@@ -34,21 +34,22 @@ namespace Shopping2022.Data
 
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Country>().HasIndex(c => c.Name).IsUnique();
+            _ = modelBuilder.Entity<Country>().HasIndex(c => c.Name).IsUnique();
 
-            modelBuilder.Entity<Category>().HasIndex(c => c.Name).IsUnique();
+            _ = modelBuilder.Entity<Category>().HasIndex(c => c.Name).IsUnique();
 
-            modelBuilder.Entity<State>().HasIndex("Name", "CountryId").IsUnique();
+            _ = modelBuilder.Entity<State>().HasIndex("Name", "CountryId").IsUnique();
 
-            modelBuilder.Entity<City>().HasIndex("Name", "StateId").IsUnique();
+            _ = modelBuilder.Entity<City>().HasIndex("Name", "StateId").IsUnique();
 
-            modelBuilder.Entity<Product>().HasIndex(p => p.Name).IsUnique();
+            _ = modelBuilder.Entity<Product>().HasIndex(p => p.Name).IsUnique();
 
-            modelBuilder.Entity<ProductCategory>().HasIndex("ProductId", "CategoryId").IsUnique();
+            _ = modelBuilder.Entity<ProductCategory>().HasIndex("ProductId", "CategoryId").IsUnique();
 
             //modelBuilder.Entity<State>().HasIndex(s => new { s.Name, s.Id }).IsUnique();
             //modelBuilder.Entity<City>().HasIndex(c => new { c.Name, c.Id }).IsUnique();
 
         }
+
     }
 }

@@ -32,11 +32,7 @@ namespace Shopping2022.Controllers
         [HttpGet]
         public IActionResult Login()
         {
-            if (User.Identity.IsAuthenticated)
-            {
-                return RedirectToAction("Index", "Home");
-            }
-            return View(new LoginViewModel());
+            return User.Identity.IsAuthenticated ? RedirectToAction("Index", "Home") : View(new LoginViewModel());
         }
 
         [HttpPost]
@@ -54,7 +50,7 @@ namespace Shopping2022.Controllers
                 {
                     ModelState.AddModelError(string.Empty, "Ha superado el máximo número de intentos, su cuenta está bloqeada, intente de nuevo en 5 minutos.");
                 }
-                else if(result.IsNotAllowed)
+                else if (result.IsNotAllowed)
                 {
                     ModelState.AddModelError(string.Empty, "El usuario no ha sido habilitado, debes de seguir las instrucciones del correo enviado para poder habilitarte en el Sistema.");
                 }
@@ -145,7 +141,7 @@ namespace Shopping2022.Controllers
                     return View(addUserViewModel);
                 }
 
-                ModelState.AddModelError(String.Empty,response.Message);
+                ModelState.AddModelError(string.Empty, response.Message);
 
             }
 
@@ -164,19 +160,14 @@ namespace Shopping2022.Controllers
                 return NotFound();
             }
 
-            var user = await _userHelper.GetUserAsync(new Guid(userId));
+            User user = await _userHelper.GetUserAsync(new Guid(userId));
             if (user is null)
             {
                 return NotFound();
             }
 
-            var result = await _userHelper.ConfirmEmailAsync(user, token);
-            if (!result.Succeeded)
-            {
-                return NotFound();
-            }
-
-            return View(result);
+            IdentityResult result = await _userHelper.ConfirmEmailAsync(user, token);
+            return !result.Succeeded ? NotFound() : View(result);
         }
 
         public async Task<IActionResult> ChangeUser()
@@ -230,7 +221,7 @@ namespace Shopping2022.Controllers
                 user.City = await _context.Cities.FindAsync(model.CityId);
                 user.Document = model.Document;
 
-                await _userHelper.UpdateUserAsync(user);
+                _ = await _userHelper.UpdateUserAsync(user);
 
 
 
@@ -299,18 +290,18 @@ namespace Shopping2022.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = await _userHelper.GetUserAsync(model.Email);
+                User user = await _userHelper.GetUserAsync(model.Email);
                 if (user is null)
                 {
-                    ModelState.AddModelError(String.Empty, "El Email no corresponde a ningun usuario registrado.");
+                    ModelState.AddModelError(string.Empty, "El Email no corresponde a ningun usuario registrado.");
 
                     return View(model);
                 }
 
-                var myToken = await _userHelper.GeneratePasswordResetTokenAsync(user);
+                string myToken = await _userHelper.GeneratePasswordResetTokenAsync(user);
                 string tokenLink = Url.Action("ResetPassword", "Account", new
                 {
-                   token = myToken
+                    token = myToken
                 }, protocol: HttpContext.Request.Scheme);
 
                 Response response = _mailHelper.SendMail(
@@ -328,7 +319,7 @@ namespace Shopping2022.Controllers
                     return View(model);
                 }
 
-                ModelState.AddModelError(String.Empty, response.Message);
+                ModelState.AddModelError(string.Empty, response.Message);
 
             }
 
@@ -346,10 +337,10 @@ namespace Shopping2022.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = await _userHelper.GetUserAsync(model.UserName);
+                User user = await _userHelper.GetUserAsync(model.UserName);
                 if (user is not null)
                 {
-                    var result = await _userHelper.ResetPasswordAsync(user, model.Token, model.Password);
+                    IdentityResult result = await _userHelper.ResetPasswordAsync(user, model.Token, model.Password);
                     if (result.Succeeded)
                     {
                         ViewBag.Message = "Contraseña cambiada con éxito";
@@ -366,7 +357,7 @@ namespace Shopping2022.Controllers
             }
 
             ViewBag.Message = "Usuario no encontrado..";
-            
+
             return View(model);
         }
 
@@ -375,12 +366,7 @@ namespace Shopping2022.Controllers
             Country? country = _context.Countries
                 .Include(c => c.States).FirstOrDefault(c => c.Id == countryId);
 
-            if (country == null)
-            {
-                return null;
-            }
-
-            return Json(country.States.OrderBy(d => d.Name));
+            return country == null ? null : Json(country.States.OrderBy(d => d.Name));
         }
 
         public JsonResult GetCities(int stateId)
@@ -388,12 +374,7 @@ namespace Shopping2022.Controllers
             State? state = _context.States
                 .Include(s => s.Cities)
                 .FirstOrDefault(s => s.Id == stateId);
-            if (state == null)
-            {
-                return null;
-            }
-
-            return Json(state.Cities.OrderBy(c => c.Name));
+            return state == null ? null : Json(state.Cities.OrderBy(c => c.Name));
         }
 
 

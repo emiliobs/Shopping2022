@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace Shopping2022.Models
 {
@@ -44,7 +43,7 @@ namespace Shopping2022.Models
         [Display(Name = "Image")]
         public IFormFile ImageFile { get; set; }
 
-       
+
         [Display(Name = "País")]
         [Range(1, int.MaxValue, ErrorMessage = "Debes de seleccionar un país.")]
         [Required(ErrorMessage = "El campo {0} es obligatorio.")]
@@ -52,7 +51,7 @@ namespace Shopping2022.Models
 
         public IEnumerable<SelectListItem> Countries { get; set; }
 
-        
+
         [Display(Name = "Departmento / Estado")]
         [Range(1, int.MaxValue, ErrorMessage = "Debes de seleccionar un departamento/estado.")]
         [Required(ErrorMessage = "El campo {0} es obligatorio.")]
@@ -60,7 +59,7 @@ namespace Shopping2022.Models
 
         public IEnumerable<SelectListItem> States { get; set; }
 
-       
+
         [Display(Name = "Ciuadad")]
         [Range(1, int.MaxValue, ErrorMessage = "Debes de seleccionar una ciudad.")]
         public int CityId { get; set; }

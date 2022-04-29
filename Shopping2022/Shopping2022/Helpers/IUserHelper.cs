@@ -16,7 +16,7 @@ namespace Shopping2022.Helpers
         Task AddUserToRoleAsyn(User user, string roleName);
 
         Task<bool> IsUserInRoleAsync(User user, string roleName);
-        
+
         Task<SignInResult> LoginAsync(LoginViewModel loginViewModel);
 
         Task<IdentityResult> ChangePasswordAsync(User user, string oldPassword, string newPassword);
@@ -34,5 +34,5 @@ namespace Shopping2022.Helpers
         Task<IdentityResult> ResetPasswordAsync(User user, string token, string password);
 
         Task LogoutAsync();
-    } 
+    }
 }

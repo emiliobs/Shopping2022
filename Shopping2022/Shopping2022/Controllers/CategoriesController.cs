@@ -36,8 +36,8 @@ namespace Shopping2022.Controllers
             {
                 try
                 {
-                    _context.Categories.Add(category);
-                    await _context.SaveChangesAsync();
+                    _ = _context.Categories.Add(category);
+                    _ = await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateException dbUpdateException)
@@ -69,12 +69,7 @@ namespace Shopping2022.Controllers
             }
 
             Category? category = await _context.Categories.FindAsync(id);
-            if (category == null)
-            {
-                return NotFound();
-            }
-
-            return View(category);
+            return category == null ? NotFound() : View(category);
         }
 
         [HttpPost]
@@ -85,8 +80,8 @@ namespace Shopping2022.Controllers
             {
                 try
                 {
-                    _context.Update(category);
-                    await _context.SaveChangesAsync();
+                    _ = _context.Update(category);
+                    _ = await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateException dbUpdateException)
@@ -119,12 +114,7 @@ namespace Shopping2022.Controllers
             }
 
             Category? category = await _context.Categories.FindAsync(id);
-            if (category == null)
-            {
-                return NotFound();
-            }
-
-            return View(category);
+            return category == null ? NotFound() : View(category);
         }
 
         [HttpGet]
@@ -136,12 +126,7 @@ namespace Shopping2022.Controllers
             }
 
             Category? category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == id);
-            if (category == null)
-            {
-                return NotFound();
-            }
-
-            return View(category);
+            return category == null ? NotFound() : View(category);
         }
 
         [HttpPost, ActionName("Delete")]
@@ -151,8 +136,8 @@ namespace Shopping2022.Controllers
 
 
             Category? category = await _context.Categories.FindAsync(id);
-            _context.Categories.Remove(category);
-            await _context.SaveChangesAsync();
+            _ = _context.Categories.Remove(category);
+            _ = await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
 
             //Country country = await _context.Countries.FindAsync(id);

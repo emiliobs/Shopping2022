@@ -5,7 +5,7 @@ namespace Shopping2022.Models
 {
     public class HomeViewModel
     {
-        public ICollection<Product>  Products { get; set; }
+        public ICollection<Product> Products { get; set; }
 
         [DisplayFormat(DataFormatString = "{0:N2}")]
         [Display(Name = "Cantidad")]

@@ -42,7 +42,7 @@ namespace Shopping2022.Controllers
         [HttpGet]
         public async Task<IActionResult> Create()
         {
-            AddUserViewModel addUserViewModel = new AddUserViewModel
+            AddUserViewModel addUserViewModel = new()
             {
                 Id = Guid.Empty.ToString(),
                 Countries = await _combosHelper.GetComboCountriesAsync(),
@@ -101,7 +101,7 @@ namespace Shopping2022.Controllers
                     return View(addUserViewModel);
                 }
 
-                ModelState.AddModelError(String.Empty, response.Message);
+                ModelState.AddModelError(string.Empty, response.Message);
 
             }
 
@@ -117,25 +117,13 @@ namespace Shopping2022.Controllers
             Country country = _context.Countries
                           .Include(c => c.States)
                           .FirstOrDefault(c => c.Id == countryId);
-            if (country == null)
-            {
-                return null;
-            }
-
-            return Json(country.States.OrderBy(s => s.Name));
-
+            return country == null ? null : Json(country.States.OrderBy(s => s.Name));
         }
 
         public JsonResult GetCities(int stateId)
         {
             State state = _context.States.Include(s => s.Cities).FirstOrDefault(s => s.Id == stateId);
-            if (state == null)
-            {
-                return null;
-            }
-
-            return Json(state.Cities.OrderBy(s => s.Name));
-
+            return state == null ? null : Json(state.Cities.OrderBy(s => s.Name));
         }
     }
 }

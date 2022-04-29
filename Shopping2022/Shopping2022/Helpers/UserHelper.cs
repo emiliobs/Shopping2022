@@ -27,7 +27,7 @@ namespace Shopping2022.Helpers
         }
         public async Task<User> AddUserAsync(AddUserViewModel addUserViewModel)
         {
-            User? user = new User
+            User? user = new()
             {
                 Address = addUserViewModel.Address,
                 Document = addUserViewModel.Document,
@@ -56,7 +56,7 @@ namespace Shopping2022.Helpers
 
         public async Task AddUserToRoleAsyn(User user, string roleName)
         {
-            await _userManager.AddToRoleAsync(user, roleName);
+            _ = await _userManager.AddToRoleAsync(user, roleName);
         }
 
         public async Task CheckRoleAsync(string roleName)
@@ -65,7 +65,7 @@ namespace Shopping2022.Helpers
 
             if (!roleExists)
             {
-                await _roleManager.CreateAsync(new IdentityRole
+                _ = await _roleManager.CreateAsync(new IdentityRole
                 {
                     Name = roleName,
                 });
@@ -114,15 +114,24 @@ namespace Shopping2022.Helpers
             await _signInManager.SignOutAsync();
         }
 
-        public async Task<string> GenerateEmailConfirmationTokenAsync(User user) => await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        public async Task<string> GenerateEmailConfirmationTokenAsync(User user)
+        {
+            return await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        }
 
+        public async Task<IdentityResult> ConfirmEmailAsync(User user, string token)
+        {
+            return await _userManager.ConfirmEmailAsync(user, token);
+        }
 
+        public async Task<string> GeneratePasswordResetTokenAsync(User user)
+        {
+            return await _userManager.GeneratePasswordResetTokenAsync(user);
+        }
 
-        public async Task<IdentityResult> ConfirmEmailAsync(User user, string token) => await _userManager.ConfirmEmailAsync(user, token);
-
-        public async Task<string> GeneratePasswordResetTokenAsync(User user) => await _userManager.GeneratePasswordResetTokenAsync(user);
-       
-
-        public async Task<IdentityResult> ResetPasswordAsync(User user, string token, string password) => await _userManager.ResetPasswordAsync(user, token, password);
+        public async Task<IdentityResult> ResetPasswordAsync(User user, string token, string password)
+        {
+            return await _userManager.ResetPasswordAsync(user, token, password);
+        }
     }
 }

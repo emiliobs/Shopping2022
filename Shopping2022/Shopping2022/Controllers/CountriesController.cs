@@ -26,7 +26,7 @@ namespace Shopping2022.Controllers
 
         public IActionResult Create()
         {
-            Country country = new Country
+            Country country = new()
             {
                 States = new List<State>(),
             };
@@ -43,8 +43,8 @@ namespace Shopping2022.Controllers
             {
                 try
                 {
-                    _context.Add(country);
-                    await _context.SaveChangesAsync();
+                    _ = _context.Add(country);
+                    _ = await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateException dbUpdateException)
@@ -79,12 +79,7 @@ namespace Shopping2022.Controllers
                 .Include(c => c.States)
                 .ThenInclude(s => s.Cities)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (country == null)
-            {
-                return NotFound();
-            }
-
-            return View(country);
+            return country == null ? NotFound() : View(country);
         }
 
         public async Task<IActionResult> Edit(int? id)
@@ -95,11 +90,7 @@ namespace Shopping2022.Controllers
             }
 
             Country country = await _context.Countries.Include(c => c.States).FirstOrDefaultAsync(c => c.Id == id);
-            if (country == null)
-            {
-                return NotFound();
-            }
-            return View(country);
+            return country == null ? NotFound() : View(country);
         }
 
 
@@ -116,8 +107,8 @@ namespace Shopping2022.Controllers
             {
                 try
                 {
-                    _context.Update(country);
-                    await _context.SaveChangesAsync();
+                    _ = _context.Update(country);
+                    _ = await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateException dbUpdateException)
@@ -149,12 +140,7 @@ namespace Shopping2022.Controllers
 
             Country country = await _context.Countries.Include(c => c.States)
                 .FirstOrDefaultAsync(c => c.Id == id);
-            if (country == null)
-            {
-                return NotFound();
-            }
-
-            return View(country);
+            return country == null ? NotFound() : View(country);
         }
 
 
@@ -165,8 +151,8 @@ namespace Shopping2022.Controllers
             try
             {
                 Country country = await _context.Countries.FindAsync(id);
-                _context.Countries.Remove(country);
-                await _context.SaveChangesAsync();
+                _ = _context.Countries.Remove(country);
+                _ = await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception)
@@ -190,12 +176,7 @@ namespace Shopping2022.Controllers
                 .Include(s => s.Country)
                 .Include(s => s.Cities)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (state == null)
-            {
-                return NotFound();
-            }
-
-            return View(state);
+            return state == null ? NotFound() : View(state);
         }
 
 
@@ -213,7 +194,7 @@ namespace Shopping2022.Controllers
                 return NotFound();
             }
 
-            StateViewModel stateVIewModel = new StateViewModel
+            StateViewModel stateVIewModel = new()
             {
                 CountryId = country.Id,
             };
@@ -237,8 +218,8 @@ namespace Shopping2022.Controllers
                         Name = stateViewModel.Name,
                     };
 
-                    _context.Add(state);
-                    await _context.SaveChangesAsync();
+                    _ = _context.Add(state);
+                    _ = await _context.SaveChangesAsync();
 
                     return RedirectToAction(nameof(Details), new { id = stateViewModel.Id });
                 }
@@ -276,7 +257,7 @@ namespace Shopping2022.Controllers
                 return NotFound();
             }
 
-            StateViewModel stateViewModel = new StateViewModel
+            StateViewModel stateViewModel = new()
             {
                 CountryId = state.Country.Id,
                 Id = state.Id,
@@ -299,14 +280,14 @@ namespace Shopping2022.Controllers
             {
                 try
                 {
-                    State state = new State
+                    State state = new()
                     {
                         Id = stateViewModely.Id,
                         Name = stateViewModely.Name,
                     };
 
-                    _context.Update(state);
-                    await _context.SaveChangesAsync();
+                    _ = _context.Update(state);
+                    _ = await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Details), new { id = stateViewModely.CountryId });
                 }
                 catch (DbUpdateException dbUpdateException)
@@ -342,7 +323,7 @@ namespace Shopping2022.Controllers
                 return NotFound();
             }
 
-            CityViewModel CityVIewModel = new CityViewModel
+            CityViewModel CityVIewModel = new()
             {
                 StateId = state.Id,
             };
@@ -359,14 +340,14 @@ namespace Shopping2022.Controllers
             {
                 try
                 {
-                    City City = new City()
+                    City City = new()
                     {
                         State = await _context.States.FindAsync(cityViewModel.StateId),
                         Name = cityViewModel.Name,
                     };
 
-                    _context.Add(City);
-                    await _context.SaveChangesAsync();
+                    _ = _context.Add(City);
+                    _ = await _context.SaveChangesAsync();
 
                     return RedirectToAction(nameof(DetailsState), new { id = cityViewModel.Id });
                 }
@@ -429,14 +410,14 @@ namespace Shopping2022.Controllers
             {
                 try
                 {
-                    City city = new City
+                    City city = new()
                     {
                         Id = cityViewModel.Id,
                         Name = cityViewModel.Name,
                     };
 
-                    _context.Update(city);
-                    await _context.SaveChangesAsync();
+                    _ = _context.Update(city);
+                    _ = await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(DetailsState), new { id = cityViewModel.StateId });
                 }
                 catch (DbUpdateException dbUpdateException)
@@ -469,12 +450,7 @@ namespace Shopping2022.Controllers
             City city = await _context.Cities
                 .Include(c => c.State)
                 .FirstOrDefaultAsync(c => c.Id == id);
-            if (city == null)
-            {
-                return NotFound();
-            }
-
-            return View(city);
+            return city == null ? NotFound() : View(city);
         }
 
 
@@ -489,12 +465,7 @@ namespace Shopping2022.Controllers
             State state = await _context.States
                 .Include(s => s.Country)
                 .FirstOrDefaultAsync(s => s.Id == id);
-            if (state == null)
-            {
-                return NotFound();
-            }
-
-            return View(state);
+            return state == null ? NotFound() : View(state);
         }
 
 
@@ -508,9 +479,9 @@ namespace Shopping2022.Controllers
                     .Include(s => s.Country)
                     .FirstOrDefaultAsync(s => s.Id == id);
 
-                _context.States.Remove(state);
+                _ = _context.States.Remove(state);
 
-                await _context.SaveChangesAsync();
+                _ = await _context.SaveChangesAsync();
 
                 return RedirectToAction(nameof(Details), new { id = state.Country.Id });
             }
@@ -532,12 +503,7 @@ namespace Shopping2022.Controllers
             City city = await _context.Cities
                 .Include(c => c.State)
                 .FirstOrDefaultAsync(s => s.Id == id);
-            if (city == null)
-            {
-                return NotFound();
-            }
-
-            return View(city);
+            return city == null ? NotFound() : View(city);
         }
 
 
@@ -551,9 +517,9 @@ namespace Shopping2022.Controllers
                     .Include(c => c.State)
                     .FirstOrDefaultAsync(c => c.Id == id);
 
-                _context.Cities.Remove(city);
+                _ = _context.Cities.Remove(city);
 
-                await _context.SaveChangesAsync();
+                _ = await _context.SaveChangesAsync();
 
                 return RedirectToAction(nameof(DetailsState), new { id = city.State.Id });
             }

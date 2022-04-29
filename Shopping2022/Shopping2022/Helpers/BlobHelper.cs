@@ -39,7 +39,7 @@ namespace Shopping2022.Helpers
 
         public async Task<Guid> UploadBlobAsync(byte[] file, string containerName)
         {
-            MemoryStream? stream = new MemoryStream(file);
+            MemoryStream? stream = new(file);
             return await UploadBlobAsync(stream, containerName);
         }
 
@@ -60,15 +60,15 @@ namespace Shopping2022.Helpers
 
         private async Task<Guid> UploadBlobAsync(Stream stream, string containerName)
         {
-            
-            
-                Guid name = Guid.NewGuid();
-                CloudBlobContainer? container = _blobClient.GetContainerReference(containerName);
-                CloudBlockBlob? blockBlob = container.GetBlockBlobReference($"{name}");
-                await blockBlob.UploadFromStreamAsync(stream);
-            
-                return name;
-           
+
+
+            Guid name = Guid.NewGuid();
+            CloudBlobContainer? container = _blobClient.GetContainerReference(containerName);
+            CloudBlockBlob? blockBlob = container.GetBlockBlobReference($"{name}");
+            await blockBlob.UploadFromStreamAsync(stream);
+
+            return name;
+
 
         }
     }

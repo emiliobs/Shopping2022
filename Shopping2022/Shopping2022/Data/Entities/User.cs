@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Shopping2022.Data.Entities
 {
-    public class User  : IdentityUser
+    public class User : IdentityUser
     {
         [Display(Name = "Documento")]
         [MaxLength(20, ErrorMessage = "El campo {0} debe tener máximo {1} caractéres.")]

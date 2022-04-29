@@ -22,21 +22,21 @@ namespace Shopping2022.Helpers
                 string port = _configuration["mail:Port"];
                 string password = _configuration["Mail:Password"];
 
-                MimeMessage message = new MimeMessage();
+                MimeMessage message = new();
                 message.From.Add(new MailboxAddress(name, from));
                 message.To.Add(new MailboxAddress(toName, toEmail));
                 message.Subject = subject;
-                BodyBuilder bodyBuilder = new BodyBuilder()
+                BodyBuilder bodyBuilder = new()
                 {
                     HtmlBody = body,
                 };
                 message.Body = bodyBuilder.ToMessageBody();
 
-                using (SmtpClient client = new SmtpClient())
+                using (SmtpClient client = new())
                 {
                     client.Connect(smtp, int.Parse(port));
                     client.Authenticate(from, password);
-                    client.Send(message);
+                    _ = client.Send(message);
                     client.Disconnect(true);
                 }
 
