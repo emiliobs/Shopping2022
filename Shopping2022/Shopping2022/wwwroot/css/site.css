@@ -21,7 +21,7 @@ body {
 @charset "utf-8";
 
 
-
+/*
 .card {
     display: flex;
     flex-direction: column;
@@ -68,6 +68,8 @@ body {
         content: "";
 
     }
+*/
+
 
     /*Zoom images*/
     .zoom{
