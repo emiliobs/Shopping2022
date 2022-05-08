@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shopping2022.Data;
 using Shopping2022.Data.Entities;
@@ -69,7 +70,7 @@ namespace Shopping2022.Controllers
                 categories += $"{category.Category.Name}, ";
             }
 
-            categories = categories.Substring(0, categories.Length - 2);
+            categories = categories[..^2];
 
             AddProductToCartViewModel model = new()
             {
@@ -115,13 +116,11 @@ namespace Shopping2022.Controllers
                 User = user
             };
 
-            _context.TemporalSales.Add(temporalSale);
-            await _context.SaveChangesAsync();
+            _ = _context.TemporalSales.Add(temporalSale);
+            _ = await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
-
-
 
         public async Task<IActionResult> Add(int? id)
         {
@@ -161,6 +160,32 @@ namespace Shopping2022.Controllers
 
 
         }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> ShowCart()
+        {
+            User user = await _userHelper.GetUserAsync(User.Identity.Name);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            List<TemporalSale> temporaleSales = await _context.TemporalSales
+                                      .Include(ts => ts.Product)
+                                      .ThenInclude(p => p.ProductImages)
+                                      .Where(ts => ts.User.Id == user.Id)
+                                      .ToListAsync();
+
+            ShowCartVIewModel model = new()
+            {
+                User = user,
+                TemporalSales = temporaleSales,
+            };
+
+            return View(model);
+        }
+
 
         public IActionResult Privacy()
         {
