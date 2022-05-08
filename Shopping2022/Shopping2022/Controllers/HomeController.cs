@@ -186,6 +186,69 @@ namespace Shopping2022.Controllers
             return View(model);
         }
 
+        public async Task<IActionResult> DecreaseQuantity(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            TemporalSale temporaleSale = await _context.TemporalSales.FindAsync(id);
+            if (temporaleSale is null)
+            {
+                return NotFound();
+            }
+
+            if (temporaleSale.Quantity > 1)
+            {
+                temporaleSale.Quantity--;
+                _ = _context.TemporalSales.Update(temporaleSale);
+                _ = await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(ShowCart));
+
+        }
+
+        public async Task<IActionResult> IncreaseQuantity(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            TemporalSale temporaleSale = await _context.TemporalSales.FindAsync(id);
+            if (temporaleSale is null)
+            {
+                return NotFound();
+            }
+
+            temporaleSale.Quantity++;
+             _context.TemporalSales.Update(temporaleSale);
+             await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(ShowCart));
+
+        }
+
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var temporaleSale = await _context.TemporalSales.FindAsync(id);
+            if (temporaleSale is null)
+            {
+                return NotFound();
+            }
+
+            _context.TemporalSales.Remove(temporaleSale);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(ShowCart));
+        }
+
 
         public IActionResult Privacy()
         {
