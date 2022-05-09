@@ -14,12 +14,15 @@ namespace Shopping2022.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly DataContext _context;
         private readonly IUserHelper _userHelper;
+        private readonly IOrdersHelper _ordersHelper;
 
-        public HomeController(ILogger<HomeController> logger, DataContext context, IUserHelper userHelper)
+        public HomeController(ILogger<HomeController> logger, DataContext context, IUserHelper userHelper,
+            IOrdersHelper ordersHelper)
         {
             _logger = logger;
             _context = context;
             _userHelper = userHelper;
+            this._ordersHelper = ordersHelper;
         }
 
         public async Task<IActionResult> Index()
@@ -27,6 +30,7 @@ namespace Shopping2022.Controllers
             List<Product> products = await _context.Products
                                                    .Include(p => p.ProductImages)
                                                    .Include(p => p.ProductCategories)
+                                                   .Where(p => p.Stock > 0)
                                                    .OrderBy(p => p.Description)
                                                    .ToListAsync();
 
@@ -186,6 +190,35 @@ namespace Shopping2022.Controllers
             return View(model);
         }
 
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ShowCart(ShowCartVIewModel model)
+        {
+            var user = await _userHelper.GetUserAsync(User.Identity.Name);
+            if (user is null)
+            {
+                return NotFound();
+            }
+
+            model.User = user;
+            model.TemporalSales = await _context.TemporalSales
+                                  .Include(ts => ts.Product)
+                                  .ThenInclude(p => p.ProductImages)
+                                  .Where(ts => ts.User.Id == user.Id)
+                                  .ToListAsync();
+
+            var response = await _ordersHelper.ProcessOrderAsync(model);
+            if (response.IsSuccess)
+            {
+                return RedirectToAction(nameof(OrderSuccess));
+            }
+
+            ModelState.AddModelError(String.Empty, response.Message);
+
+            return View(model);
+        }
+
         public async Task<IActionResult> DecreaseQuantity(int? id)
         {
             if (id == null)
@@ -260,7 +293,7 @@ namespace Shopping2022.Controllers
             TemporalSale temporaleSale = await _context.TemporalSales.FindAsync(id);
             if (temporaleSale is null)
             {
-                 NotFound();
+                _ = NotFound();
             }
 
             EditTemporalSaleViewModel model = new()
@@ -276,10 +309,10 @@ namespace Shopping2022.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int? id,EditTemporalSaleViewModel model)
+        public async Task<IActionResult> Edit(int? id, EditTemporalSaleViewModel model)
         {
 
-            if (id  !=  model.Id)
+            if (id != model.Id)
             {
                 return NotFound();
             }
@@ -288,18 +321,18 @@ namespace Shopping2022.Controllers
             {
                 try
                 {
-                    var temporalSale = await _context.TemporalSales.FindAsync(id);
+                    TemporalSale temporalSale = await _context.TemporalSales.FindAsync(id);
                     temporalSale.Quantity = model.Quantity;
                     temporalSale.Remarks = model.Remarks;
-                    _context.Update(temporalSale);
-                    await _context.SaveChangesAsync();
+                    _ = _context.Update(temporalSale);
+                    _ = await _context.SaveChangesAsync();
 
                     return RedirectToAction(nameof(ShowCart));
                 }
                 catch (Exception ex)
                 {
 
-                    ModelState.AddModelError(String.Empty, ex.Message);
+                    ModelState.AddModelError(string.Empty, ex.Message);
                     return View(model);
                 }
 
@@ -307,6 +340,14 @@ namespace Shopping2022.Controllers
             }
 
             return View(model);
+        }
+
+        [Authorize]
+        public IActionResult OrderSuccess()
+        {
+
+
+            return View();
         }
 
         public IActionResult Privacy()

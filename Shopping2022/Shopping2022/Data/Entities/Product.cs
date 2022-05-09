@@ -43,5 +43,8 @@ namespace Shopping2022.Data.Entities
         public string ImageFullPath => ProductImages == null || ProductImages.Count == 0
             ? $"https://localhost:7264/images/noimage.png"
             : ProductImages.FirstOrDefault().ImageFullPath;
+
+        //relation:
+        public ICollection<SaleDetail> SaleDetails { get; set; }
     }
 }
