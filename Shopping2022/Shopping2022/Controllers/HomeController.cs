@@ -224,8 +224,8 @@ namespace Shopping2022.Controllers
             }
 
             temporaleSale.Quantity++;
-             _context.TemporalSales.Update(temporaleSale);
-             await _context.SaveChangesAsync();
+            _ = _context.TemporalSales.Update(temporaleSale);
+            _ = await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(ShowCart));
 
@@ -238,17 +238,76 @@ namespace Shopping2022.Controllers
                 return NotFound();
             }
 
-            var temporaleSale = await _context.TemporalSales.FindAsync(id);
+            TemporalSale temporaleSale = await _context.TemporalSales.FindAsync(id);
             if (temporaleSale is null)
             {
                 return NotFound();
             }
 
-            _context.TemporalSales.Remove(temporaleSale);
-            await _context.SaveChangesAsync();
+            _ = _context.TemporalSales.Remove(temporaleSale);
+            _ = await _context.SaveChangesAsync();
             return RedirectToAction(nameof(ShowCart));
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id is null)
+            {
+                return NotFound();
+            }
+
+            TemporalSale temporaleSale = await _context.TemporalSales.FindAsync(id);
+            if (temporaleSale is null)
+            {
+                 NotFound();
+            }
+
+            EditTemporalSaleViewModel model = new()
+            {
+                Id = temporaleSale.Id,
+                Remarks = temporaleSale.Remarks,
+                Quantity = temporaleSale.Quantity,
+            };
+
+            return View(model);
+
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int? id,EditTemporalSaleViewModel model)
+        {
+
+            if (id  !=  model.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var temporalSale = await _context.TemporalSales.FindAsync(id);
+                    temporalSale.Quantity = model.Quantity;
+                    temporalSale.Remarks = model.Remarks;
+                    _context.Update(temporalSale);
+                    await _context.SaveChangesAsync();
+
+                    return RedirectToAction(nameof(ShowCart));
+                }
+                catch (Exception ex)
+                {
+
+                    ModelState.AddModelError(String.Empty, ex.Message);
+                    return View(model);
+                }
+
+
+            }
+
+            return View(model);
+        }
 
         public IActionResult Privacy()
         {
