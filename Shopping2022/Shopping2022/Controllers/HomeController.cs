@@ -22,7 +22,7 @@ namespace Shopping2022.Controllers
             _logger = logger;
             _context = context;
             _userHelper = userHelper;
-            this._ordersHelper = ordersHelper;
+            _ordersHelper = ordersHelper;
         }
 
         public async Task<IActionResult> Index()
@@ -195,7 +195,7 @@ namespace Shopping2022.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ShowCart(ShowCartVIewModel model)
         {
-            var user = await _userHelper.GetUserAsync(User.Identity.Name);
+            User user = await _userHelper.GetUserAsync(User.Identity.Name);
             if (user is null)
             {
                 return NotFound();
@@ -208,13 +208,13 @@ namespace Shopping2022.Controllers
                                   .Where(ts => ts.User.Id == user.Id)
                                   .ToListAsync();
 
-            var response = await _ordersHelper.ProcessOrderAsync(model);
+            Common.Response response = await _ordersHelper.ProcessOrderAsync(model);
             if (response.IsSuccess)
             {
                 return RedirectToAction(nameof(OrderSuccess));
             }
 
-            ModelState.AddModelError(String.Empty, response.Message);
+            ModelState.AddModelError(string.Empty, response.Message);
 
             return View(model);
         }

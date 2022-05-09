@@ -41,19 +41,19 @@ namespace Shopping2022.Helpers
                     Remarks = temporaleSale.Remarks,
                 });
 
-                var product = await _context.Products.FindAsync(temporaleSale.Product.Id);
+                Product product = await _context.Products.FindAsync(temporaleSale.Product.Id);
                 if (product != null)
                 {
                     product.Stock -= temporaleSale.Quantity;
-                    _context.Products.Update(product);
+                    _ = _context.Products.Update(product);
                 }
 
-                _context.TemporalSales.Remove(temporaleSale);
+                _ = _context.TemporalSales.Remove(temporaleSale);
 
             }
 
-            _context.Sales.Add(sale);
-            await _context.SaveChangesAsync();
+            _ = _context.Sales.Add(sale);
+            _ = await _context.SaveChangesAsync();
 
             return response;
 
