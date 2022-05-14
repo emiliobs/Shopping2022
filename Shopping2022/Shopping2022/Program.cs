@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Shopping2022.Data;
 using Shopping2022.Data.Entities;
 using Shopping2022.Helpers;
+using Vereyon.Web;
 
 WebApplicationBuilder? builder = WebApplication.CreateBuilder(args);
 
@@ -44,7 +45,7 @@ builder.Services.AddScoped<ICombosHelper, ComboHelper>();
 builder.Services.AddScoped<IBlobHelper, BlobHelper>();
 builder.Services.AddScoped<IMailHelper, MailHelper>();
 builder.Services.AddScoped<IOrdersHelper, OrdersHelper>();
-
+builder.Services.AddFlashMessage();
 
 builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
 WebApplication? app = builder.Build();

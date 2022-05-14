@@ -6,5 +6,8 @@ namespace Shopping2022.Helpers
     public interface IOrdersHelper
     {
         Task<Response> ProcessOrderAsync(ShowCartVIewModel showCartVIewModel);
-    }
+
+        Task<Response> CancelOrderAsync(int id);
+
+    } 
 }

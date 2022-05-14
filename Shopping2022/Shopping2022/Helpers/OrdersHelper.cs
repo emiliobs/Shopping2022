@@ -1,4 +1,5 @@
-﻿using Shopping2022.Common;
+﻿using Microsoft.EntityFrameworkCore;
+using Shopping2022.Common;
 using Shopping2022.Data;
 using Shopping2022.Data.Entities;
 using Shopping2022.Enums;
@@ -13,6 +14,28 @@ namespace Shopping2022.Helpers
         public OrdersHelper(DataContext context)
         {
             _context = context;
+        }
+
+        public async Task<Response> CancelOrderAsync(int id)
+        {
+            var sale = await _context.Sales
+                .Include(s => s.SaleDetails)
+                .ThenInclude(sd => sd.Product)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            foreach (var saleDetail in sale.SaleDetails)
+            {
+                var product = await _context.Products.FindAsync(saleDetail.Product.Id);
+                if (product != null)
+                {
+                    product.Stock += saleDetail.Quantity;
+                }
+            }
+
+            sale.OrderStatus = OrderStatus.Cancelado;
+            await _context.SaveChangesAsync();
+
+            return new Response { IsSuccess = true };
         }
 
         public async Task<Response> ProcessOrderAsync(ShowCartVIewModel showCartVIewModel)
