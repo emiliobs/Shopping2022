@@ -25,21 +25,50 @@ namespace Shopping2022.Controllers
             _context = context;
             _userHelper = userHelper;
             _ordersHelper = ordersHelper;
-            this._flashMessage = flashMessage;
+            _flashMessage = flashMessage;
         }
 
-        public async Task<IActionResult> Index()
+        [HttpGet]
+        [HttpPost]
+        public async Task<IActionResult> Index(string sortOrder, string searchString)
         {
-            List<Product> products = await _context.Products
-                                                   .Include(p => p.ProductImages)
-                                                   .Include(p => p.ProductCategories)
-                                                   .Where(p => p.Stock > 0)
-                                                   .OrderBy(p => p.Description)
-                                                   .ToListAsync();
+            ViewData["NameSortParm"] = string.IsNullOrEmpty(sortOrder) ? "NameDesc" : "";
+            ViewData["PriceSortParm"] = sortOrder == "Price" ? "PriceDesc" : "Price";
+            ViewData["currentFilter"] = searchString;
+
+            //Consulata sql Ejecutable por el ToListAsync()
+            //List<Product> products = await _context.Products
+            //                                       .Include(p => p.ProductImages)
+            //                                       .Include(p => p.ProductCategories)
+            //                                       .Where(p => p.Stock > 0)
+            //                                       .OrderBy(p => p.Description)
+            //                                       .ToListAsync();
+
+            //Consulta Sql no Ejecutable:
+            IQueryable<Product> query = _context.Products
+                        .Include(p => p.ProductImages)
+                        .Include(p => p.ProductCategories)
+                        .Where(p => p.Stock > 0);
+
+            switch (sortOrder)
+            {
+                case "NameDesc":
+                    query = query.OrderByDescending(p => p.Name);
+                    break;
+                case "Price":
+                    query = query.OrderBy(p => p.Price);
+                    break;
+                case "PriceDesc":
+                    query = query.OrderByDescending((p) => p.Price);
+                    break;
+                default:
+                    query = query.OrderBy(p => p.Name);
+                    break;
+            }
 
             HomeViewModel model = new()
             {
-                Products = products
+                Products = await query.ToListAsync(),//Aqui materializo o ejecuto la consulta Sql.
             };
 
             User user = await _userHelper.GetUserAsync(User.Identity.Name);

@@ -5,6 +5,13 @@
 
 <link type="text/css" href="~/css/OnlyCardHome.css" />
 
+
+<div class="mb-2">
+    <a asp-action="Index" class="btn btn-primary" asp-route-sortOrder="@ViewData["NameSortParm"]">Ordenar por Nombre</a>&nbsp;&nbsp;
+    <a asp-action="Index" class="btn btn-primary" asp-route-sortOrder="@ViewData["PriceSortParm"]">Ordenar por Precio</a>
+</div>
+
+
 @if (Model.Quantity > 0)
 {
     <div style="text-align:right;">
