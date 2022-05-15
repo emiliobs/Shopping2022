@@ -5,6 +5,7 @@ using Shopping2022.Data;
 using Shopping2022.Data.Entities;
 using Shopping2022.Helpers;
 using Shopping2022.Models;
+using Vereyon.Web;
 
 namespace Shopping2022.Controllers
 {
@@ -14,12 +15,14 @@ namespace Shopping2022.Controllers
         private readonly DataContext _context;
         private readonly ICombosHelper _combosHelper;
         private readonly IBlobHelper _blobHelper;
+        private readonly IFlashMessage _flashMessage;
 
-        public ProductsController(DataContext context, ICombosHelper combosHelper, IBlobHelper blobHelper)
+        public ProductsController(DataContext context, ICombosHelper combosHelper, IBlobHelper blobHelper, IFlashMessage flashMessage)
         {
             _context = context;
             _combosHelper = combosHelper;
             _blobHelper = blobHelper;
+            this._flashMessage = flashMessage;
         }
 
         public async Task<IActionResult> Index()
@@ -90,16 +93,16 @@ namespace Shopping2022.Controllers
                 {
                     if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                     {
-                        ModelState.AddModelError(string.Empty, "Ya existe un producto con el mismo nombre.");
+                        _flashMessage.Danger("Ya existe un producto con el mismo nombre.");
                     }
                     else
                     {
-                        ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                        _flashMessage.Danger(dbUpdateException.InnerException.Message);
                     }
                 }
                 catch (Exception ex)
                 {
-                    ModelState.AddModelError(string.Empty, ex.Message);
+                    _flashMessage.Danger(ex.Message);
                 }
             }
 
@@ -163,17 +166,17 @@ namespace Shopping2022.Controllers
             {
                 if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                 {
-                    ModelState.AddModelError(string.Empty, "Ya existe un producto con el mismo nombre.");
+                    _flashMessage.Danger("Ya existe un producto con el mismo nombre.");
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                    _flashMessage.Danger(dbUpdateException.InnerException.Message);
                 }
             }
             catch (Exception ex)
             {
 
-                ModelState.AddModelError(string.Empty, ex.Message);
+                _flashMessage.Danger(ex.Message);
             }
 
 
@@ -247,7 +250,7 @@ namespace Shopping2022.Controllers
                 catch (Exception ex)
                 {
 
-                    ModelState.AddModelError(string.Empty, ex.Message);
+                    _flashMessage.Danger(ex.Message);
                 }
             }
 
@@ -343,17 +346,16 @@ namespace Shopping2022.Controllers
                 {
                     if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                     {
-                        ModelState.AddModelError(string.Empty, "El Prodycto ya tiene esa Categoría.");
+                        _flashMessage.Danger("El Prodycto ya tiene esa Categoría.");
                     }
                     else
                     {
-                        ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                        _flashMessage.Danger(dbUpdateException.InnerException.Message);
                     }
                 }
                 catch (Exception ex)
                 {
-
-                    ModelState.AddModelError(string.Empty, ex.Message);
+                    _flashMessage.Danger(ex.Message);
                 }
             }
 
@@ -420,6 +422,9 @@ namespace Shopping2022.Controllers
             {
                 await _blobHelper.DeleteBlobAsync(productImage.ImageId, "products");
             }
+
+            _flashMessage.Confirmation("Registro Borrado");
+
 
             return RedirectToAction(nameof(Index));
         }

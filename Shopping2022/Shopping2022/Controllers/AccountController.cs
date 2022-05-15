@@ -7,6 +7,7 @@ using Shopping2022.Data.Entities;
 using Shopping2022.Enums;
 using Shopping2022.Helpers;
 using Shopping2022.Models;
+using Vereyon.Web;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
 namespace Shopping2022.Controllers
@@ -18,15 +19,17 @@ namespace Shopping2022.Controllers
         private readonly ICombosHelper _combosHelper;
         private readonly IBlobHelper _blobHelper;
         private readonly IMailHelper _mailHelper;
+        private readonly IFlashMessage _flashMessage;
 
         public AccountController(IUserHelper userHelper, DataContext context, ICombosHelper combosHelper,
-                                IBlobHelper blobHelper, IMailHelper mailHelper)
+                                IBlobHelper blobHelper, IMailHelper mailHelper, IFlashMessage flashMessage)
         {
             _userHelper = userHelper;
             _context = context;
             _combosHelper = combosHelper;
             _blobHelper = blobHelper;
             _mailHelper = mailHelper;
+            this._flashMessage = flashMessage;
         }
 
         [HttpGet]
@@ -48,16 +51,16 @@ namespace Shopping2022.Controllers
 
                 if (result.IsLockedOut)
                 {
-                    ModelState.AddModelError(string.Empty, "Ha superado el máximo número de intentos, su cuenta está bloqeada, intente de nuevo en 5 minutos.");
+                    _flashMessage.Danger("Ha superado el máximo número de intentos, su cuenta está bloqeada, intente de nuevo en 5 minutos.");
                 }
                 else if (result.IsNotAllowed)
                 {
-                    ModelState.AddModelError(string.Empty, "El usuario no ha sido habilitado, debes de seguir las instrucciones del correo enviado para poder habilitarte en el Sistema.");
+                    _flashMessage.Danger("El usuario no ha sido habilitado, debes de seguir las instrucciones del correo enviado para poder habilitarte en el Sistema.");
                 }
                 else
                 {
 
-                    ModelState.AddModelError(string.Empty, "Email o Contraseña incorrectos");
+                    _flashMessage.Danger("Email o Contraseña incorrectos");
                 }
 
             }
@@ -110,7 +113,7 @@ namespace Shopping2022.Controllers
                 User user = await _userHelper.AddUserAsync(addUserViewModel);
                 if (user == null)
                 {
-                    ModelState.AddModelError(string.Empty, "Este correo ya está siendo usado.");
+                    _flashMessage.Danger("Este correo ya está siendo usado.");
 
                     addUserViewModel.Countries = await _combosHelper.GetComboCountriesAsync();
                     addUserViewModel.States = await _combosHelper.GetComboStatesByIdAsync(addUserViewModel.CountryId);
@@ -136,9 +139,10 @@ namespace Shopping2022.Controllers
 
                 if (response.IsSuccess)
                 {
-                    ViewBag.Message = "Las instrucciones para habilitar el usuario han sido enviadas al Correo.";
+                    _flashMessage.Danger("Las instrucciones para habilitar el usuario han sido enviadas al Correo.");
 
-                    return View(addUserViewModel);
+
+                    return RedirectToAction(nameof(Login)); 
                 }
 
                 ModelState.AddModelError(string.Empty, response.Message);
@@ -250,7 +254,8 @@ namespace Shopping2022.Controllers
             {
                 if (model.OldPassword == model.NewPassword)
                 {
-                    ModelState.AddModelError(string.Empty, "Debes ingresar una contraseña diferente.");
+
+                    _flashMessage.Danger("Debes ingresar una contraseña diferente.");
 
                     return View(model);
                 }
@@ -267,12 +272,12 @@ namespace Shopping2022.Controllers
                     }
                     else
                     {
-                        ModelState.AddModelError(string.Empty, result.Errors.FirstOrDefault().Description);
+                        _flashMessage.Danger(result.Errors.FirstOrDefault().Description);
                     }
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Usuario no Encontrado.");
+                    _flashMessage.Danger("Usuario no Encontrado.");
                 }
             }
 
@@ -293,12 +298,13 @@ namespace Shopping2022.Controllers
                 User user = await _userHelper.GetUserAsync(model.Email);
                 if (user is null)
                 {
-                    ModelState.AddModelError(string.Empty, "El Email no corresponde a ningun usuario registrado.");
+                    _flashMessage.Danger("El Email no corresponde a ningun usuario registrado.");
 
                     return View(model);
                 }
 
                 string myToken = await _userHelper.GeneratePasswordResetTokenAsync(user);
+
                 string tokenLink = Url.Action("ResetPassword", "Account", new
                 {
                     token = myToken
@@ -314,12 +320,13 @@ namespace Shopping2022.Controllers
 
                 if (response.IsSuccess)
                 {
-                    ViewBag.Message = "Las instrucciones para recuperar la contraseña han sido enviadas a su Correo.";
-
-                    return View(model);
+                    _flashMessage.Confirmation("Las instrucciones para recuperar la contraseña han sido enviadas a su Correo.");
+                    return RedirectToAction(nameof(Login));
                 }
 
-                ModelState.AddModelError(string.Empty, response.Message);
+                _flashMessage.Danger(response.Message);
+
+                //ModelState.AddModelError(string.Empty, response.Message);
 
             }
 
@@ -343,12 +350,14 @@ namespace Shopping2022.Controllers
                     IdentityResult result = await _userHelper.ResetPasswordAsync(user, model.Token, model.Password);
                     if (result.Succeeded)
                     {
-                        ViewBag.Message = "Contraseña cambiada con éxito";
+                        _flashMessage.Confirmation("Contraseña cambiada con éxito");
 
-                        return View();
+                        return RedirectToAction(nameof(Login));
+
                     }
 
-                    ViewBag.Message = "Error cambiando la Contraseña.";
+                    _flashMessage.Danger("Error cambiando la Contraseña.");
+
                     return View(model);
 
                 }
@@ -356,7 +365,7 @@ namespace Shopping2022.Controllers
                 return View(model);
             }
 
-            ViewBag.Message = "Usuario no encontrado..";
+            _flashMessage.Danger("Usuario no encontrado.");
 
             return View(model);
         }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shopping2022.Data;
 using Shopping2022.Data.Entities;
+using Vereyon.Web;
 
 namespace Shopping2022.Controllers
 {
@@ -10,10 +11,12 @@ namespace Shopping2022.Controllers
     public class CategoriesController : Controller
     {
         private readonly DataContext _context;
+        private readonly IFlashMessage _flashMessage;
 
-        public CategoriesController(DataContext context)
+        public CategoriesController(DataContext context, IFlashMessage flashMessage)
         {
             _context = context;
+            this._flashMessage = flashMessage;
         }
 
         [HttpGet]
@@ -44,16 +47,17 @@ namespace Shopping2022.Controllers
                 {
                     if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                     {
-                        ModelState.AddModelError(string.Empty, "Ya existe un Categoría con el mismo nombre.");
+                        _flashMessage.Danger("Ya existe un Categoría con el mismo nombre.");
+                       
                     }
                     else
                     {
-                        ModelState.AddModelError(string.Empty, dbUpdateException.InnerException.Message);
+                        _flashMessage.Danger(dbUpdateException.InnerException.Message);
                     }
                 }
                 catch (Exception ex)
                 {
-                    ModelState.AddModelError(string.Empty, ex.Message);
+                    _flashMessage.Danger(ex.Message);
                 }
             }
 
@@ -88,16 +92,16 @@ namespace Shopping2022.Controllers
                 {
                     if (dbUpdateException.InnerException.Message.Contains("duplicate"))
                     {
-                        ModelState.AddModelError(string.Empty, "Ya existe una Categoría con el mismo nombre.");
+                        _flashMessage.Danger("Ya existe una Categoría con el mismo nombre.");
                     }
                     else
                     {
-                        ModelState.AddModelError(string.Empty, dbUpdateException.Message);
+                        _flashMessage.Danger(dbUpdateException.Message);
                     }
                 }
                 catch (Exception ex)
                 {
-                    ModelState.AddModelError(string.Empty, ex.Message);
+                    _flashMessage.Danger(ex.Message);
                 }
 
             }
@@ -125,7 +129,8 @@ namespace Shopping2022.Controllers
                 return NotFound();
             }
 
-            Category? category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == id);
+            Category category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == id);
+            
             return category == null ? NotFound() : View(category);
         }
 
@@ -138,6 +143,9 @@ namespace Shopping2022.Controllers
             Category? category = await _context.Categories.FindAsync(id);
             _ = _context.Categories.Remove(category);
             _ = await _context.SaveChangesAsync();
+
+            _flashMessage.Confirmation("Registro Borrado.");
+
             return RedirectToAction(nameof(Index));
 
             //Country country = await _context.Countries.FindAsync(id);

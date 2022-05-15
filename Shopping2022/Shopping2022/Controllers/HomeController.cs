@@ -6,6 +6,7 @@ using Shopping2022.Data.Entities;
 using Shopping2022.Helpers;
 using Shopping2022.Models;
 using System.Diagnostics;
+using Vereyon.Web;
 
 namespace Shopping2022.Controllers
 {
@@ -15,14 +16,16 @@ namespace Shopping2022.Controllers
         private readonly DataContext _context;
         private readonly IUserHelper _userHelper;
         private readonly IOrdersHelper _ordersHelper;
+        private readonly IFlashMessage _flashMessage;
 
         public HomeController(ILogger<HomeController> logger, DataContext context, IUserHelper userHelper,
-            IOrdersHelper ordersHelper)
+            IOrdersHelper ordersHelper, IFlashMessage flashMessage)
         {
             _logger = logger;
             _context = context;
             _userHelper = userHelper;
             _ordersHelper = ordersHelper;
+            this._flashMessage = flashMessage;
         }
 
         public async Task<IActionResult> Index()
@@ -214,7 +217,7 @@ namespace Shopping2022.Controllers
                 return RedirectToAction(nameof(OrderSuccess));
             }
 
-            ModelState.AddModelError(string.Empty, response.Message);
+            _flashMessage.Danger(response.Message);
 
             return View(model);
         }
@@ -279,6 +282,10 @@ namespace Shopping2022.Controllers
 
             _ = _context.TemporalSales.Remove(temporaleSale);
             _ = await _context.SaveChangesAsync();
+
+            _flashMessage.Confirmation("Registro Borrado");
+
+
             return RedirectToAction(nameof(ShowCart));
         }
 
@@ -332,7 +339,7 @@ namespace Shopping2022.Controllers
                 catch (Exception ex)
                 {
 
-                    ModelState.AddModelError(string.Empty, ex.Message);
+                    _flashMessage.Danger(ex.Message);
                     return View(model);
                 }
 

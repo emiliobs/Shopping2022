@@ -7,6 +7,7 @@ using Shopping2022.Data.Entities;
 using Shopping2022.Enums;
 using Shopping2022.Helpers;
 using Shopping2022.Models;
+using Vereyon.Web;
 
 namespace Shopping2022.Controllers
 {
@@ -18,14 +19,16 @@ namespace Shopping2022.Controllers
         private readonly ICombosHelper _combosHelper;
         private readonly IBlobHelper _blobHelper;
         private readonly IMailHelper _mailHelper;
+        private readonly IFlashMessage _flashMessage;
 
-        public UsersController(DataContext context, IUserHelper userHelper, ICombosHelper combosHelper, IBlobHelper blobHelper, IMailHelper mailHelper)
+        public UsersController(DataContext context, IUserHelper userHelper, ICombosHelper combosHelper, IBlobHelper blobHelper, IMailHelper mailHelper, IFlashMessage flashMessage)
         {
             _context = context;
             _userHelper = userHelper;
             _combosHelper = combosHelper;
             _blobHelper = blobHelper;
             _mailHelper = mailHelper;
+            this._flashMessage = flashMessage;
         }
 
 
@@ -71,7 +74,7 @@ namespace Shopping2022.Controllers
                 Data.Entities.User? user = await _userHelper.AddUserAsync(addUserViewModel);
                 if (user == null)
                 {
-                    ModelState.AddModelError(string.Empty, "Este correo ya está siendo Usado.");
+                    _flashMessage.Danger("Este correo ya está siendo Usado.");
                     addUserViewModel.Countries = await _combosHelper.GetComboCountriesAsync();
                     addUserViewModel.States = await _combosHelper.GetComboStatesByIdAsync(addUserViewModel.StateId);
                     addUserViewModel.Cities = await _combosHelper.GetComboCitiesByIdyAsync(addUserViewModel.CityId);
@@ -96,12 +99,12 @@ namespace Shopping2022.Controllers
 
                 if (response.IsSuccess)
                 {
-                    ViewBag.Message = "Las instrucciones para habilitar el Administrador han sido enviadas al Correo.";
+                    _flashMessage.Confirmation("Las instrucciones para habilitar el Administrador han sido enviadas al Correo.");
 
                     return View(addUserViewModel);
                 }
 
-                ModelState.AddModelError(string.Empty, response.Message);
+                _flashMessage.Danger(response.Message);
 
             }
 
