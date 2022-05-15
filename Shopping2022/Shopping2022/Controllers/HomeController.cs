@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Shopping2022.Common;
 using Shopping2022.Data;
 using Shopping2022.Data.Entities;
 using Shopping2022.Helpers;
@@ -28,12 +29,28 @@ namespace Shopping2022.Controllers
             _flashMessage = flashMessage;
         }
 
-        [HttpGet]
+      
+        
+
+       [HttpGet]
         [HttpPost]
-        public async Task<IActionResult> Index(string sortOrder, string searchString)
+        public async Task<IActionResult> Index(string sortOrder, string currentFilter, string searchString, int? pageNumber)
         {
+            ViewData["CurrentSort"] = sortOrder;
             ViewData["NameSortParm"] = string.IsNullOrEmpty(sortOrder) ? "NameDesc" : "";
             ViewData["PriceSortParm"] = sortOrder == "Price" ? "PriceDesc" : "Price";
+
+
+            if (searchString != null)
+            {
+                pageNumber = 1;
+            }
+            else
+            {
+                searchString = currentFilter;
+            }
+            
+            
             ViewData["currentFilter"] = searchString;
 
             //Consulata sql Ejecutable por el ToListAsync()
@@ -48,27 +65,35 @@ namespace Shopping2022.Controllers
             IQueryable<Product> query = _context.Products
                         .Include(p => p.ProductImages)
                         .Include(p => p.ProductCategories)
-                        .Where(p => p.Stock > 0);
+                        .ThenInclude(pc => pc.Category);
 
-            switch (sortOrder)
+            if (!string.IsNullOrEmpty(searchString))
             {
-                case "NameDesc":
-                    query = query.OrderByDescending(p => p.Name);
-                    break;
-                case "Price":
-                    query = query.OrderBy(p => p.Price);
-                    break;
-                case "PriceDesc":
-                    query = query.OrderByDescending((p) => p.Price);
-                    break;
-                default:
-                    query = query.OrderBy(p => p.Name);
-                    break;
+                query = query.Where(p => (p.Name.ToLower().Contains(searchString.ToLower()) ||
+                                    p.ProductCategories.Any(pc => pc.Category.Name.ToLower().Contains(searchString.ToLower()))) &&
+                                    p.Stock > 0);
             }
+            else
+            {
+                query = query.Where(p => p.Stock > 0);
+            }
+
+
+
+            query = sortOrder switch
+            {
+                "NameDesc" => query.OrderByDescending(p => p.Name),
+                "Price" => query.OrderBy(p => p.Price),
+                "PriceDesc" => query.OrderByDescending((p) => p.Price),
+                _ => query.OrderBy(p => p.Name),
+            };
+
+            int pageSize = 8;
 
             HomeViewModel model = new()
             {
-                Products = await query.ToListAsync(),//Aqui materializo o ejecuto la consulta Sql.
+                Products = await PaginatedList<Product>.CreateAsync(query,pageNumber ?? 1, pageSize),
+                Categories = await _context.Categories.ToListAsync(),
             };
 
             User user = await _userHelper.GetUserAsync(User.Identity.Name);

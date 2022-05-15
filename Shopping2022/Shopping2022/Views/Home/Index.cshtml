@@ -5,20 +5,61 @@
 
 <link type="text/css" href="~/css/OnlyCardHome.css" />
 
+ <div class="container">
+<h1>Shopping Categorías</h1>
 
-<div class="mb-2">
-    <a asp-action="Index" class="btn btn-primary" asp-route-sortOrder="@ViewData["NameSortParm"]">Ordenar por Nombre</a>&nbsp;&nbsp;
-    <a asp-action="Index" class="btn btn-primary" asp-route-sortOrder="@ViewData["PriceSortParm"]">Ordenar por Precio</a>
+<div class="row">
+    <div class="col-md-8">
+        <div class="mb-2">
+            @foreach (var item in Model.Categories)
+            {
+
+                <a asp-action="Index" asp-route-searchString="@item.Name" name="SearchString" style="text-decoration:none;"><span>@item.Name&nbsp;&nbsp;</span></a>
+            }
+        </div>
+    </div>
+    <div class="col-md-4">
+        @if (Model.Quantity > 0)
+        {
+            <div style="text-align:right;">
+                <a asp-action="ShowCart" class="btn btn-outline-primary">Ver Carro de Compras (@Model.Quantity)</a>
+
+            </div>
+        }
+    </div>
+
+
+</div>
+<hr />
+<div class="row">
+    <div class="col-md-8">
+        <form asp-action="Index" method="get">
+            <div class="form-actions no-color">
+                <p>
+                    Buscar por nombre o categoría: <input type="text" name="SearchString" value="@ViewData["CurrentFilter"]" class="m-2" />
+                    <input type="submit" value="Buscar" class="btn btn-warning" />
+                    <a asp-action="Index" class="btn btn-success">Ver Todos los Productos</a>
+                </p>
+            </div>
+        </form>
+    </div>
+
+    <div class="col-md-4">
+
+        <div class="mb-2">
+            <a asp-action="Index" class="btn btn-primary m-2" asp-route-sortOrder="@ViewData["NameSortParm"]">Ordenar por Nombre</a>&nbsp;&nbsp;
+            <a asp-action="Index" class="btn btn-primary" asp-route-sortOrder="@ViewData["PriceSortParm"]">Ordenar por Precio</a>
+        </div>
+    </div>
+</div>
 </div>
 
 
-@if (Model.Quantity > 0)
-{
-    <div style="text-align:right;">
-        <a asp-action="ShowCart" class="btn btn-outline-primary">Ver Carro de Compras (@Model.Quantity)</a>
 
-    </div>
-}
+
+
+
+
 
 <div class="row row-cols-1 row-cols-md-4 g-4 mt-1">
     @if (Model.Products.Count() > 0)
@@ -50,6 +91,30 @@
         <h3>No hay productos con su criterio de búsqueda</h3>
     }
 </div>
+
+@{
+    var prevDisabled = !Model.Products.HasPreviousPage ? "disabled" : "";
+    var nextDisabled = !Model.Products.HasNextPage ? "disabled" : "";
+}
+
+<div class="mt-5">
+    <a asp-action="Index"
+       asp-route-sortOrder="@ViewData["CurrentSort"]"
+       asp-route-pageNumber="@(Model.Products.PageIndex - 1)"
+       asp-route-currentFilter="@ViewData["CurrentFilter"]"
+       class="btn btn-warning @prevDisabled">
+        Anterior
+    </a>
+    <a asp-action="Index"
+       asp-route-sortOrder="@ViewData["CurrentSort"]"
+       asp-route-pageNumber="@(Model.Products.PageIndex + 1)"
+       asp-route-currentFilter="@ViewData["CurrentFilter"]"
+       class="btn btn-success @nextDisabled">
+        Siguiente
+    </a>
+</div>
+
+
 
 @section Scripts {
     @{
