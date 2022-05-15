@@ -7,7 +7,6 @@ using Vereyon.Web;
 
 namespace Shopping2022.Controllers
 {
-    [Authorize(Roles = "Admin")]
     public class OrdersController : Controller
     {
         private readonly DataContext _context;
@@ -17,9 +16,11 @@ namespace Shopping2022.Controllers
         public OrdersController(DataContext context, IFlashMessage flashMessage, IOrdersHelper ordersHelper)
         {
             _context = context;
-            this._flashMessage = flashMessage;
-            this._ordersHelper = ordersHelper;
+            _flashMessage = flashMessage;
+            _ordersHelper = ordersHelper;
         }
+
+        [Authorize(Roles = "Admin")]
 
         [HttpGet]
         public async Task<IActionResult> Index()
@@ -32,6 +33,8 @@ namespace Shopping2022.Controllers
                          .ToListAsync()
                        );
         }
+
+        [Authorize(Roles = "Admin")]
 
         [HttpGet]
         public async Task<IActionResult> Details(int? id)
@@ -51,6 +54,8 @@ namespace Shopping2022.Controllers
             return sales is null ? NotFound() : View(sales);
         }
 
+        [Authorize(Roles = "Admin")]
+
         public async Task<IActionResult> Dispatch(int? id)
         {
             if (id is null)
@@ -58,7 +63,7 @@ namespace Shopping2022.Controllers
                 return NotFound();
             }
 
-            var sale = await _context.Sales.FindAsync(id);
+            Data.Entities.Sale sale = await _context.Sales.FindAsync(id);
             if (sale is null)
             {
                 return NotFound();
@@ -71,22 +76,24 @@ namespace Shopping2022.Controllers
             else
             {
                 sale.OrderStatus = Enums.OrderStatus.Despachado;
-                _context.Sales.Update(sale);
-                await _context.SaveChangesAsync();
+                _ = _context.Sales.Update(sale);
+                _ = await _context.SaveChangesAsync();
                 _flashMessage.Confirmation("El estado del pedido ha sido cambiado a 'Despachado'.");
             }
 
-            return RedirectToAction(nameof(Details), new {Id = sale.Id});
+            return RedirectToAction(nameof(Details), new { sale.Id });
         }
 
-        public async Task<IActionResult>Send(int? id)
+        [Authorize(Roles = "Admin")]
+
+        public async Task<IActionResult> Send(int? id)
         {
             if (id is null)
             {
                 return NotFound();
             }
 
-            var sale = await _context.Sales.FindAsync(id);
+            Data.Entities.Sale sale = await _context.Sales.FindAsync(id);
             if (sale is null)
             {
                 return NotFound();
@@ -99,22 +106,24 @@ namespace Shopping2022.Controllers
             else
             {
                 sale.OrderStatus = Enums.OrderStatus.Enviado;
-                _context.Sales.Update(sale);
-                await _context.SaveChangesAsync();
+                _ = _context.Sales.Update(sale);
+                _ = await _context.SaveChangesAsync();
                 _flashMessage.Confirmation("En el estado del pedido ha sido cambiado a 'Enviado'.");
             }
 
             return RedirectToAction(nameof(Details), new { id = sale.Id });
         }
 
+        [Authorize(Roles = "Admin")]
+
         public async Task<IActionResult> Confirm(int? id)
         {
-            if (id  is null)
+            if (id is null)
             {
                 return NotFound();
             }
 
-            var sale = await _context.Sales.FindAsync(id);
+            Data.Entities.Sale sale = await _context.Sales.FindAsync(id);
             if (sale is null)
             {
                 return NotFound();
@@ -127,13 +136,15 @@ namespace Shopping2022.Controllers
             else
             {
                 sale.OrderStatus = Enums.OrderStatus.Confirmado;
-                _context.Sales.Update(sale);
-                await _context.SaveChangesAsync();
+                _ = _context.Sales.Update(sale);
+                _ = await _context.SaveChangesAsync();
                 _flashMessage.Confirmation("El estado del pedido ha sido cambiado a 'Confirmado' .");
             }
 
-            return RedirectToAction(nameof(Details), new {Id = sale.Id} );
+            return RedirectToAction(nameof(Details), new { sale.Id });
         }
+
+        [Authorize(Roles = "Admin")]
 
         public async Task<IActionResult> Cancel(int? id)
         {
@@ -142,7 +153,7 @@ namespace Shopping2022.Controllers
                 return NotFound();
             }
 
-            var sale = await _context.Sales.FindAsync(id);
+            Data.Entities.Sale sale = await _context.Sales.FindAsync(id);
             if (sale is null)
             {
                 return NotFound();
@@ -154,11 +165,45 @@ namespace Shopping2022.Controllers
             }
             else
             {
-                await _ordersHelper.CancelOrderAsync(sale.Id);
+                _ = await _ordersHelper.CancelOrderAsync(sale.Id);
                 _flashMessage.Confirmation("El estado del pedido ha sido cambiado a 'Cancelado'.");
             }
 
-            return RedirectToAction(nameof(Details), new {Id = sale.Id});
+            return RedirectToAction(nameof(Details), new { sale.Id });
+        }
+
+        [Authorize(Roles = "User")]
+        public async Task<IActionResult> MyOrders()
+        {
+            return View(await _context.Sales
+                .Include(s => s.User)
+                .Include(s => s.SaleDetails)
+                .ThenInclude(sd => sd.Product)
+                .Where(s => s.User.UserName == User.Identity.Name)
+                .ToListAsync());
+        }
+
+        [Authorize(Roles = "User")]
+        public async Task<IActionResult> MyDetails(int? id)
+        {
+            if (id is null)
+            {
+                return NotFound();
+            }
+
+            var sale = await _context.Sales
+                .Include(s =>s.User)
+                .Include(s =>s.SaleDetails)
+                .ThenInclude(sd => sd.Product)
+                .ThenInclude(p => p.ProductImages)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (sale is null)
+            {
+                return NotFound();
+            }
+
+            return View(sale);
         }
     }
 }
