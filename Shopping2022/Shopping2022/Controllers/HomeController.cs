@@ -29,10 +29,10 @@ namespace Shopping2022.Controllers
             _flashMessage = flashMessage;
         }
 
-      
-        
 
-       [HttpGet]
+
+
+        [HttpGet]
         [HttpPost]
         public async Task<IActionResult> Index(string sortOrder, string currentFilter, string searchString, int? pageNumber)
         {
@@ -49,8 +49,8 @@ namespace Shopping2022.Controllers
             {
                 searchString = currentFilter;
             }
-            
-            
+
+
             ViewData["currentFilter"] = searchString;
 
             //Consulata sql Ejecutable por el ToListAsync()
@@ -67,16 +67,11 @@ namespace Shopping2022.Controllers
                         .Include(p => p.ProductCategories)
                         .ThenInclude(pc => pc.Category);
 
-            if (!string.IsNullOrEmpty(searchString))
-            {
-                query = query.Where(p => (p.Name.ToLower().Contains(searchString.ToLower()) ||
+            query = !string.IsNullOrEmpty(searchString)
+                ? query.Where(p => (p.Name.ToLower().Contains(searchString.ToLower()) ||
                                     p.ProductCategories.Any(pc => pc.Category.Name.ToLower().Contains(searchString.ToLower()))) &&
-                                    p.Stock > 0);
-            }
-            else
-            {
-                query = query.Where(p => p.Stock > 0);
-            }
+                                    p.Stock > 0)
+                : query.Where(p => p.Stock > 0);
 
 
 
@@ -92,7 +87,7 @@ namespace Shopping2022.Controllers
 
             HomeViewModel model = new()
             {
-                Products = await PaginatedList<Product>.CreateAsync(query,pageNumber ?? 1, pageSize),
+                Products = await PaginatedList<Product>.CreateAsync(query, pageNumber ?? 1, pageSize),
                 Categories = await _context.Categories.ToListAsync(),
             };
 

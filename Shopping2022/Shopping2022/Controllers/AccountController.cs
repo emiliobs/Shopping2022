@@ -29,7 +29,7 @@ namespace Shopping2022.Controllers
             _combosHelper = combosHelper;
             _blobHelper = blobHelper;
             _mailHelper = mailHelper;
-            this._flashMessage = flashMessage;
+            _flashMessage = flashMessage;
         }
 
         [HttpGet]
@@ -142,7 +142,7 @@ namespace Shopping2022.Controllers
                     _flashMessage.Danger("Las instrucciones para habilitar el usuario han sido enviadas al Correo.");
 
 
-                    return RedirectToAction(nameof(Login)); 
+                    return RedirectToAction(nameof(Login));
                 }
 
                 ModelState.AddModelError(string.Empty, response.Message);

@@ -18,7 +18,7 @@ namespace Shopping2022.Controllers
         public CountriesController(DataContext context, IFlashMessage flashMessage)
         {
             _context = context;
-            this._flashMessage = flashMessage;
+            _flashMessage = flashMessage;
         }
 
         [HttpGet]
@@ -453,8 +453,8 @@ namespace Shopping2022.Controllers
             City city = await _context.Cities
                 .Include(c => c.State)
                 .FirstOrDefaultAsync(c => c.Id == id);
-            
-                _flashMessage.Confirmation("Registro Borrado");
+
+            _flashMessage.Confirmation("Registro Borrado");
 
 
             return city == null ? NotFound() : View(city);
@@ -515,7 +515,7 @@ namespace Shopping2022.Controllers
             City city = await _context.Cities
                 .Include(c => c.State)
                 .FirstOrDefaultAsync(s => s.Id == id);
-                _flashMessage.Confirmation("Registro Borrado");
+            _flashMessage.Confirmation("Registro Borrado");
 
             return city == null ? NotFound() : View(city);
         }

@@ -13,5 +13,9 @@ namespace Shopping2022.Data.Entities
 
         public ICollection<ProductCategory> productCategories { get; set; }
 
+        [Display(Name = "# Productos")]
+        public int ProductsNumber => productCategories == null ? 0 : productCategories.Count();
+
+
     }
 }

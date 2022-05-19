@@ -191,19 +191,14 @@ namespace Shopping2022.Controllers
                 return NotFound();
             }
 
-            var sale = await _context.Sales
-                .Include(s =>s.User)
-                .Include(s =>s.SaleDetails)
+            Data.Entities.Sale sale = await _context.Sales
+                .Include(s => s.User)
+                .Include(s => s.SaleDetails)
                 .ThenInclude(sd => sd.Product)
                 .ThenInclude(p => p.ProductImages)
                 .FirstOrDefaultAsync(s => s.Id == id);
 
-            if (sale is null)
-            {
-                return NotFound();
-            }
-
-            return View(sale);
+            return sale is null ? NotFound() : View(sale);
         }
     }
 }

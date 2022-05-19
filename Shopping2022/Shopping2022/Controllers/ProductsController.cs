@@ -22,7 +22,7 @@ namespace Shopping2022.Controllers
             _context = context;
             _combosHelper = combosHelper;
             _blobHelper = blobHelper;
-            this._flashMessage = flashMessage;
+            _flashMessage = flashMessage;
         }
 
         public async Task<IActionResult> Index()

@@ -24,9 +24,9 @@ namespace Shopping2022.Common
         {
             int count = await source.CountAsync();
             List<T> item = await source.Skip((pageIndex - 1) * pageSize).Take(pageSize).ToListAsync();
-       
+
             return new PaginatedList<T>(item, count, pageIndex, pageSize);
-        
+
         }
 
     }

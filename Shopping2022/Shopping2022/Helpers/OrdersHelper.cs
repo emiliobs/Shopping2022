@@ -18,14 +18,14 @@ namespace Shopping2022.Helpers
 
         public async Task<Response> CancelOrderAsync(int id)
         {
-            var sale = await _context.Sales
+            Sale sale = await _context.Sales
                 .Include(s => s.SaleDetails)
                 .ThenInclude(sd => sd.Product)
                 .FirstOrDefaultAsync(s => s.Id == id);
 
-            foreach (var saleDetail in sale.SaleDetails)
+            foreach (SaleDetail saleDetail in sale.SaleDetails)
             {
-                var product = await _context.Products.FindAsync(saleDetail.Product.Id);
+                Product product = await _context.Products.FindAsync(saleDetail.Product.Id);
                 if (product != null)
                 {
                     product.Stock += saleDetail.Quantity;
@@ -33,7 +33,7 @@ namespace Shopping2022.Helpers
             }
 
             sale.OrderStatus = OrderStatus.Cancelado;
-            await _context.SaveChangesAsync();
+            _ = await _context.SaveChangesAsync();
 
             return new Response { IsSuccess = true };
         }

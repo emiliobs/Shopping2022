@@ -28,7 +28,7 @@ namespace Shopping2022.Controllers
             _combosHelper = combosHelper;
             _blobHelper = blobHelper;
             _mailHelper = mailHelper;
-            this._flashMessage = flashMessage;
+            _flashMessage = flashMessage;
         }
 
 

@@ -9,5 +9,5 @@ namespace Shopping2022.Helpers
 
         Task<Response> CancelOrderAsync(int id);
 
-    } 
+    }
 }
